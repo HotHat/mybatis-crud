@@ -1,4 +1,9 @@
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.sql.Array;
+import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -165,6 +170,7 @@ public class Builder {
 
     private WhereGroup groupRoot;
     private WhereGroup wheres;
+//    private Connection connection;
 
 
     public Builder() {
@@ -207,6 +213,21 @@ public class Builder {
 
         query.where(this);
         wheres = preWhere;
+        return this;
+    }
+
+    public <T extends JDBCType> Builder whereIn(String column, List<T> values) throws SQLException {
+        Type genericSuperclass = values.getClass().getGenericSuperclass();
+        if (genericSuperclass instanceof ParameterizedType parameterizedType) {
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
+//            System.out.println("Generic type: " + typeArguments[0].getTypeName()); // Output: String
+            String typeName = typeArguments[0].getTypeName();
+//            Array arr = connection.createArrayOf(typeName , values.toArray());
+
+            wheres.add(new WhereCompare(column, " IN ", new WhereValue(JDBCType.valueOf(typeName), values)), true);
+        } else {
+            throw new SQLException("Type mismatch");
+        }
         return this;
     }
 

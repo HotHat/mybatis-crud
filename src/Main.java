@@ -12,10 +12,16 @@ public class Main {
                 .orWhere("phone1", "1")
                 .orWhere("phone2", "2")
                 .where((query) -> {
-                    query.where("qa1", "1")
-                            .where("qa2", "2")
-                            .orWhere("qo2", "2");
+                    query.where("l1w1", "1")
+                            .where("l1w22", "2")
+                            .orWhere("l1ow1", "2")
+                            .where((query1)-> {
+                                query1.where("l2w1", "3");
+                            })
+                            .where("l1w3", "4")
+                    ;
                 })
+                .where("l0w2", "5")
 
         ;
 

@@ -59,9 +59,17 @@ class WhereBlock implements SqlClauseCompiler {
     @Override
     public String compile() {
         if (hiddenJoin) {
-            return group.compile();
+            if (group.isGroup()) {
+                return " (" + group.compile() + ")";
+            } else {
+                return group.compile();
+            }
         } else {
-            return join.getName() + " " + group.compile();
+            if (group.isGroup()) {
+                return " " + join.getName() + " (" + group.compile() + ")";
+            } else {
+                return " " + join.getName() + " " + group.compile();
+            }
         }
     }
 }
@@ -141,52 +149,13 @@ class WhereGroup implements SqlClauseCompiler {
                 current.setHiddenJoin(true);
             }
 
-            if (current.group.isGroup()) {
-                s.append('(');
-            }
             s.append(current.compile());
-
-            if (current.group.isGroup()) {
-                s.append(')');
-            }
         }
 
         return s.toString();
     }
 }
 
-class WhereStack implements SqlClauseCompiler {
-    protected List<WhereBlock> wheres;
-    private WhereStack group;
-
-    private boolean isGroup;
-
-    public WhereStack() {
-        wheres = new ArrayList<WhereBlock>();
-    }
-
-    public void add(WhereCompare wc, boolean isAnd) {
-        if (isGroup) {
-            wheres.add(new WhereBlock(isAnd ? WhereJoin.AND: WhereJoin.OR, wc));
-        } else {
-            group.add(wc, isAnd);
-        }
-    }
-
-
-    @Override
-    public String compile() {
-        var s = new StringBuilder();
-        for (int i = 0; i < wheres.size(); i++) {
-            var current = wheres.get(i);
-            if (i > 0) {
-                s.append(" AND ");
-            }
-
-        }
-        return s.toString();
-    }
-}
 
 public class Builder {
 
@@ -247,7 +216,7 @@ public class Builder {
                 Utils.strJoin(selects, ", ") +
                 ")" +
                 " from " + Utils.compileJoin(from, ", ") +
-                " where " + wheres.compile()
+                " where " + groupRoot.compile()
                 ;
 
         return s;

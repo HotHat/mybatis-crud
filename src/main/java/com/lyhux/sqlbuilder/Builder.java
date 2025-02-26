@@ -54,7 +54,7 @@ class WhereBlock extends StmtCompile {
         StringBuilder s = new StringBuilder();
 
         CompileResult r = group.compile();
-        List<StmtValue> values = new ArrayList<>(r.getParameter());
+        List<StmtValue<?>> values = new ArrayList<StmtValue<?>>(r.getParameter());
 
         if (hiddenJoin) {
             if (group.isGroup()) {
@@ -86,11 +86,11 @@ class WhereBlock extends StmtCompile {
 class WhereCompare extends WhereStmt {
     public String columnName;
     public String operator;
-    public StmtValue value;
+    public StmtValue<?> value;
 
     public boolean isGroup() { return false; }
 
-    WhereCompare(String columnName, String operator, StmtValue value) {
+    WhereCompare(String columnName, String operator, StmtValue<?> value) {
         this.columnName = columnName;
         this.operator = operator;
         this.value = value;
@@ -98,9 +98,9 @@ class WhereCompare extends WhereStmt {
 
     @Override
     public CompileResult compile() {
-        if (operator.equals("IN")) {
+        if (operator.contains("IN")) {
             StringBuilder s = new StringBuilder();
-            List<Object> val = (List<Object>) value.value();
+            List<?> val = Utils.castToType(value.value(), List.class);
             for (int i = 0; i < val.size(); i++ ) {
                 s.append("?");
                 if (i < val.size() - 1) {
@@ -123,7 +123,7 @@ class WhereStmt extends StmtCompile {
     }
 
     public boolean isGroup() { return true; }
-    public boolean isEmpty() { return blocks.isEmpty(); }
+    public boolean isNotEmpty() { return !blocks.isEmpty(); }
 
     public void add(WhereStmt group, boolean isAnd) {
         blocks.add(new WhereBlock(isAnd ? WhereJoin.AND : WhereJoin.OR, group));
@@ -132,7 +132,7 @@ class WhereStmt extends StmtCompile {
     @Override
     public CompileResult compile() {
         var s = new StringBuilder();
-        List<StmtValue> values = new ArrayList<>();
+        List<StmtValue<?>> values = new ArrayList<>();
 
         for (int i = 0; i < blocks.size(); i++) {
             var current = blocks.get(i);
@@ -209,11 +209,11 @@ public class Builder implements BlockStmt {
 
 
     public Builder where(String column, String value) {
-        wheres.add(new WhereCompare(column, "=", new StmtValue(JDBCType.VARCHAR, value)), true);
+        wheres.add(new WhereCompare(column, "=", new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), value)), true);
         return this;
     }
     public Builder orWhere(String column, String value) {
-        wheres.add(new WhereCompare(column, "=", new StmtValue(JDBCType.VARCHAR, value)), false);
+        wheres.add(new WhereCompare(column, "=", new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), value)), false);
         return this;
     }
 
@@ -229,14 +229,27 @@ public class Builder implements BlockStmt {
 
     public Builder whereIn(String column, StrArray values) {
 
-            wheres.add(new WhereCompare(column, "IN", new StmtValue(JDBCType.valueOf("VARCHAR"), values)), true);
+            wheres.add(
+                    new WhereCompare(column, "IN",
+                    new StmtValue<>(CustomType.ofType(JDBCType.valueOf("VARCHAR")), values)), true);
 
         return this;
     }
 
     public Builder whereIn(String column, IntArray values) {
 
-        wheres.add(new WhereCompare(column, "IN", new StmtValue(JDBCType.valueOf("BIGINT"), values)), true);
+        wheres.add(
+                new WhereCompare(column, "IN",
+                        new StmtValue<>(CustomType.ofType(JDBCType.valueOf("BIGINT")), values)), true);
+
+        return this;
+    }
+
+    public Builder whereIn(String column, Builder subQuery) {
+
+        wheres.add(
+                new WhereCompare(column, "IN",
+                new StmtValue<>(CustomType.ofType(BuilderType.BUILDER), subQuery)), true);
 
         return this;
     }
@@ -267,7 +280,7 @@ public class Builder implements BlockStmt {
             s.append(" JOIN ").append(Utils.compileJoin(join, ", "));
         }
 
-        if (!wheres.isEmpty()) {
+        if (wheres.isNotEmpty()) {
             s.append(" WHERE ").append(wheres.compile());
         }
 
@@ -282,7 +295,7 @@ public class Builder implements BlockStmt {
     @Override
     public CompileResult compile() {
         StringBuilder s = new StringBuilder();
-        List<StmtValue> values = new ArrayList<>();
+        List<StmtValue<?>> values = new ArrayList<>();
 
         if (!selects.isEmpty()) {
             s.append(" SELECT ")
@@ -303,7 +316,7 @@ public class Builder implements BlockStmt {
             values.addAll(r.getParameter());
         }
 
-        if (!wheres.isEmpty()) {
+        if (wheres.isNotEmpty()) {
             CompileResult r = wheres.compile();
             s.append(" WHERE ").append(r.getSqlStmt());
             values.addAll(r.getParameter());

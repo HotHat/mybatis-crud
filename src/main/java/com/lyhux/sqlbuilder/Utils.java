@@ -19,7 +19,7 @@ public class Utils {
 
     public static CompileResult stmtJoin(List<? extends StmtCompile> arr, String sep) {
         StringBuilder s = new StringBuilder();
-        List<StmtValue> values = new ArrayList<StmtValue>();
+        List<StmtValue<?>> values = new ArrayList<>();
 
         for (int i = 0; i < arr.size(); i++ ) {
             CompileResult r = arr.get(i).compile();
@@ -43,10 +43,10 @@ public class Utils {
         return s.toString();
     }
 
-    public static String toMark(StmtValue value, String sep) {
-        if (value.type() == JDBCType.ARRAY) {
+    public static String toMark(StmtValue<?> value, String sep) {
+        if (value.type().isJDBCType() && value.type().getJDBCType() == JDBCType.ARRAY) {
             StringBuilder s = new StringBuilder();
-            List<Object> val = (List<Object>) value.value();
+            List<?> val = castToType(value.value(), List.class);
             for (int i = 0; i < val.size(); i++ ) {
                 s.append("?");
                 if (i < val.size() - 1) {
@@ -58,6 +58,13 @@ public class Utils {
             return value.value().toString();
         }
 
+    }
+
+    public static <T> T castToType(Object obj, Class<T> clazz) {
+        if (clazz.isInstance(obj)) {
+            return clazz.cast(obj);
+        }
+        return null; // Or throw an exception if the cast is not possible
     }
 
 }

@@ -1,9 +1,6 @@
 package main.java.com.lyhux.sqlbuilder;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.JDBCType;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -101,7 +98,20 @@ class WhereCompare extends WhereStmt {
 
     @Override
     public CompileResult compile() {
-        return new CompileResult(columnName + operator + "?", Arrays.asList(value));
+        if (operator.equals("IN")) {
+            StringBuilder s = new StringBuilder();
+            List<Object> val = (List<Object>) value.value();
+            for (int i = 0; i < val.size(); i++ ) {
+                s.append("?");
+                if (i < val.size() - 1) {
+                    s.append(", ");
+                }
+            }
+            String moreMark = s.toString();
+            return new CompileResult(columnName + " " + operator + " (" + moreMark +")", Arrays.asList(value));
+        } else {
+            return new CompileResult(columnName + operator + "?", Arrays.asList(value));
+        }
     }
 }
 
@@ -217,21 +227,20 @@ public class Builder implements BlockStmt {
         return this;
     }
 
-    public <T extends String> Builder whereIn(String column, List<? extends T> values) throws SQLException {
-        Type genericSuperclass = values.getClass().getGenericSuperclass();
-        if (genericSuperclass instanceof ParameterizedType parameterizedType) {
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-//            System.out.println("Generic type: " + typeArguments[0].getTypeName()); // Output: String
-            String typeName = typeArguments[0].getTypeName();
-//            Array arr = connection.createArrayOf(typeName , values.toArray());
-            String type = typeName.equals("CharSequence") ? "VARCHAR" : "BIGINT";
+    public Builder whereIn(String column, StrArray values) {
 
-            wheres.add(new WhereCompare(column, " IN ", new StmtValue(JDBCType.valueOf(type), values)), true);
-        } else {
-            throw new SQLException("Type mismatch");
-        }
+            wheres.add(new WhereCompare(column, "IN", new StmtValue(JDBCType.valueOf("VARCHAR"), values)), true);
+
         return this;
     }
+
+    public Builder whereIn(String column, IntArray values) {
+
+        wheres.add(new WhereCompare(column, "IN", new StmtValue(JDBCType.valueOf("BIGINT"), values)), true);
+
+        return this;
+    }
+
 
 
     public Builder join(String table, String leftKey, String op, String rightKey) {

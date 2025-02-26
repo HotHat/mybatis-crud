@@ -1,5 +1,6 @@
 package main.java.com.lyhux.sqlbuilder;
 
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,4 +42,22 @@ public class Utils {
         }
         return s.toString();
     }
+
+    public static String toMark(StmtValue value, String sep) {
+        if (value.type() == JDBCType.ARRAY) {
+            StringBuilder s = new StringBuilder();
+            List<Object> val = (List<Object>) value.value();
+            for (int i = 0; i < val.size(); i++ ) {
+                s.append("?");
+                if (i < val.size() - 1) {
+                    s.append(sep);
+                }
+            }
+            return s.toString();
+        } else {
+            return value.value().toString();
+        }
+
+    }
+
 }

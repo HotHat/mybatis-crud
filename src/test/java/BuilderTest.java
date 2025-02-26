@@ -2,10 +2,11 @@ package test.java;
 
 import main.java.com.lyhux.sqlbuilder.Builder;
 import main.java.com.lyhux.sqlbuilder.CompileResult;
+import main.java.com.lyhux.sqlbuilder.IntArray;
+import main.java.com.lyhux.sqlbuilder.StrArray;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 class BuilderTest {
 
@@ -69,7 +70,13 @@ class BuilderTest {
         Builder b = new Builder();
         b.select("id", "name")
                 .from("users")
-                .whereIn("id", Arrays.asList("1", "2", "3"));
+                .whereIn("id", IntArray.asList(1, 2, 3))
+                .whereIn("name", StrArray.asList("1", "2", "3"))
+        ;
+
+        CompileResult result = b.compile();
+        System.out.println(result.getSqlStmt());
+        System.out.println(result.getParameter());
     }
 
     @Test

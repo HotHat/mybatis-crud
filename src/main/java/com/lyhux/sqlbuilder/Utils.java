@@ -17,12 +17,14 @@ public class Utils {
         return s.toString();
     }
 
-    public static CompileResult stmtJoin(List<? extends StmtCompile> arr, String sep) {
+    public static CompileResult stmtJoin(List<?> arr, String sep) {
         StringBuilder s = new StringBuilder();
         List<StmtValue<?>> values = new ArrayList<>();
 
         for (int i = 0; i < arr.size(); i++ ) {
-            CompileResult r = arr.get(i).compile();
+            var target = castToType(arr.get(i), BlockStmt.class);
+            assert target != null;
+            CompileResult r = target.compile();
             s.append(r.getSqlStmt());
             if (i < arr.size() - 1) {
                 s.append(sep);

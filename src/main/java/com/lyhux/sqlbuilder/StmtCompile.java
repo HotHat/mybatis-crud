@@ -6,4 +6,9 @@ public abstract class StmtCompile implements BlockStmt {
         return false;
     }
 
+    @Override
+    public boolean isRaw() {
+        return false;
+    }
+
 }

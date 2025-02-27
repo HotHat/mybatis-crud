@@ -1,9 +1,6 @@
 package test.java;
 
-import main.java.com.lyhux.sqlbuilder.Builder;
-import main.java.com.lyhux.sqlbuilder.CompileResult;
-import main.java.com.lyhux.sqlbuilder.IntArray;
-import main.java.com.lyhux.sqlbuilder.StrArray;
+import main.java.com.lyhux.sqlbuilder.*;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -16,7 +13,7 @@ class BuilderTest {
         Builder b = new Builder();
 
         b.select("version()");
-        System.out.println(b);
+        print(b);
     }
 
     @Test
@@ -66,6 +63,17 @@ class BuilderTest {
     }
 
     @Test
+    void testWhereClause() {
+        Builder b = new Builder();
+        b
+                .from("orders")
+                .where("status", "1")
+                .where(RawStr.of("price > IF(state = \"TX\", ?, 100)"), IntArray.asList(200));
+
+        print(b);
+    }
+
+    @Test
     void testWhereIn() throws SQLException {
         Builder b = new Builder();
         b.select("id", "name")
@@ -103,7 +111,30 @@ class BuilderTest {
         Builder b = new Builder();
         b.select("id", "name")
                 .from("users")
-                .join("orders", "orders.user_id", "=", "users.id");
-        System.out.println(b);
+                .join("orders", "orders.user_id", "=", "users.id")
+                .leftJoin("orders", "orders.user_id", "=", "users.id")
+                .rightJoin("orders", "orders.user_id", "=", "users.id");
+
+        print(b);
+    }
+
+    @Test
+    void testJoin2() throws SQLException {
+        Builder b = new Builder();
+        b
+                .from("users")
+                .join("contacts", (join) -> {
+                    join.on("contacts.user_id", "=", "users.id")
+                            .where("contacts.user_id", ">", "5");
+                });
+
+        print(b);
+    }
+
+
+    private  void print(Builder builder) {
+        var result = builder.compile();
+        System.out.println(result.getSqlStmt());
+        System.out.println(result.getParameter());
     }
 }

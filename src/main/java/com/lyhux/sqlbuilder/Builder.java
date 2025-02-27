@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 class Table extends StmtCompile {
@@ -100,62 +98,69 @@ class WhereCompare extends WhereStmt {
 
     @Override
     public CompileResult compile() {
-            List<StmtValue<?>> val = new LinkedList<>();
-            StringBuilder s = new StringBuilder();
-            // IN (?, ?, ?)
-            if (value.type().isJDBCType()) {
-                val.add(value);
-            }
-            // IN (select * from xxx)
-            else {
-                switch (value.type().getBuilderType()) {
-                    case BUILDER -> {
-                        Builder b = Utils.castToType(value.value(), Builder.class);
-                        assert b != null;
-                        CompileResult r = b.compile();
-                        s.append(r.getSqlStmt());
-                        val = r.getParameter().getValues();
-                    }
-                    case STRING_ARRAY ->  {
-                        var item = Utils.castToType(value.value(), List.class);
-                        assert item != null;
-                        for (int i = 0; i < item.size(); i++ ) {
-                            s.append("?");
-                            if (i < item.size() - 1) {
-                                s.append(", ");
-                            }
-                            val.add(new StmtValue<String>(CustomType.ofType(JDBCType.VARCHAR), (String) item.get(i)));
+        List<StmtValue<?>> val = new LinkedList<>();
+        StringBuilder s = new StringBuilder();
+        // IN (?, ?, ?)
+        if (value.type().isJDBCType()) {
+            val.add(value);
+        }
+        // IN (select * from xxx)
+        else {
+            switch (value.type().getBuilderType()) {
+                case BUILDER -> {
+                    Builder b = Utils.castToType(value.value(), Builder.class);
+                    assert b != null;
+                    CompileResult r = b.compile();
+                    s.append(r.getSqlStmt());
+                    val = r.getParameter().getValues();
+                }
+                case STRING_ARRAY ->  {
+                    var item = Utils.castToType(value.value(), List.class);
+                    assert item != null;
+                    for (int i = 0; i < item.size(); i++ ) {
+                        s.append("?");
+                        if (i < item.size() - 1) {
+                            s.append(", ");
                         }
-                    }
-                    case INTEGER_ARRAY -> {
-                        var item = Utils.castToType(value.value(), List.class);
-                        for (int i = 0; i < item.size(); i++ ) {
-                            s.append("?");
-                            if (i < item.size() - 1) {
-                                s.append(", ");
-                            }
-                            val.add(new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), (Integer) item.get(i)));
-                        }
+                        val.add(new StmtValue<String>(CustomType.ofType(JDBCType.VARCHAR), (String) item.get(i)));
                     }
                 }
+                case INTEGER_ARRAY -> {
+                    var item = Utils.castToType(value.value(), List.class);
+                    for (int i = 0; i < item.size(); i++ ) {
+                        s.append("?");
+                        if (i < item.size() - 1) {
+                            s.append(", ");
+                        }
+                        val.add(new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), (Integer) item.get(i)));
+                    }
+                }
+                case RAW_STRING -> {
+                }
             }
+        }
 
-            StringBuilder result = new StringBuilder();
-            // TODO: change to compile()
-            result.append(columnName.getStmt());
+        StringBuilder result = new StringBuilder();
+        // TODO: change to compile()
+        result.append(columnName.getStmt());
 
-            if (operator.contains("IN")) {
-                result.append(" ");
-                result.append(" (");
-                result.append(s);
-                result.append(")");
-            } else if (!operator.isBlank()) {
-                result.append(operator);
+        if (operator.contains("IN")) {
+            result.append(" ");
+            result.append(" (");
+            result.append(s);
+            result.append(")");
+        } else if (!operator.isBlank()) {
+            result.append(operator);
+
+            if (!value.type().isJDBCType()  && value.type().getBuilderType() == BuilderType.RAW_STRING) {
+                result.append((String) value.value());
+            } else {
                 result.append(" ?");
             }
+        }
 
-            return new CompileResult(result.toString(), new StmtParameter(val));
-            // return new CompileResult(columnName.getStmt() + (operator.isBlank() ? "" : " " +operator+" ?"), new StmtParameter(value));
+        return new CompileResult(result.toString(), new StmtParameter(val));
+        // return new CompileResult(columnName.getStmt() + (operator.isBlank() ? "" : " " +operator+" ?"), new StmtParameter(value));
     }
 }
 
@@ -168,6 +173,7 @@ class WhereStmt extends StmtCompile {
 
     public boolean isGroup() { return true; }
     public boolean isNotEmpty() { return !blocks.isEmpty(); }
+    public int size() { return blocks.size(); }
 
     public void add(WhereStmt group, boolean isAnd) {
         blocks.add(new WhereBlock(isAnd ? WhereJoin.AND : WhereJoin.OR, group));
@@ -191,6 +197,32 @@ class WhereStmt extends StmtCompile {
         return new CompileResult(s.toString(), new StmtParameter(values));
     }
 }
+
+// class WhereNestStmt extends WhereBlock{
+//     public WhereNestStmt(WhereJoin join, WhereStmt group) {
+//         super(join, group);
+//     }
+//
+//     @Override
+//     public CompileResult compile() {
+//         var s = new StringBuilder();
+//         List<StmtValue<?>> values = new ArrayList<>();
+//
+//         s.append("(");
+//         for (int i = 0; i < group.blocks.size(); i++) {
+//             var current = group.blocks.get(i);
+//             if (i == 0) {
+//                 current.setHiddenJoin(true);
+//             }
+//             CompileResult r = current.compile();
+//             s.append(r.getSqlStmt());
+//             values.addAll(r.getParameter().getValues());
+//         }
+//         s.append(")");
+//
+//         return new CompileResult(s.toString(), new StmtParameter(values));
+//     }
+// }
 
 /*
 class JoinStmt extends StmtCompile {
@@ -237,7 +269,7 @@ public class Builder implements BlockStmt {
 
     private List<JoinClause> join;
 
-    // private WhereGroup groupRoot;
+    protected WhereStmt whereRoot;
     protected WhereStmt wheres;
 //    private Connection connection;
 
@@ -246,9 +278,9 @@ public class Builder implements BlockStmt {
         selects = new ArrayList<RawStr>();
         from = new ArrayList<>();
 
-        // groupRoot = new WhereGroup();
-        // wheres = groupRoot;
-        wheres = new WhereStmt();
+        whereRoot = new WhereStmt();
+        wheres = whereRoot;
+        // wheres = new WhereStmt();
 
         join = new ArrayList<>();
 
@@ -268,29 +300,31 @@ public class Builder implements BlockStmt {
         return this;
     }
 
+    protected  <T> Builder baseWhere(String column, String operator, T value, CustomType type, boolean isAnd, boolean isRawStr) {
+        wheres.add(new WhereCompare(
+                    isRawStr ? RawStr.of(column) : EscapeStr.of(column),
+                    operator,
+                    new StmtValue<>(type, value)
+                ),
+                isAnd
+        );
+        return this;
+    }
 
     public Builder where(String column, String value) {
-        wheres.add(new WhereCompare(EscapeStr.of(column), "=", new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), value)), true);
-        return this;
+        return baseWhere(column, "=", value, CustomType.ofType(JDBCType.VARCHAR), true, false);
     }
 
     public Builder where(String column, String operator, String value) {
-        wheres.add(new WhereCompare(EscapeStr.of(column), operator, new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), value)), true);
-        return this;
+        return baseWhere(column, operator, value, CustomType.ofType(JDBCType.VARCHAR), true, false);
     }
 
     public Builder orWhere(String column, String value) {
-        wheres.add(new WhereCompare(EscapeStr.of(column), "=", new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), value)), false);
-        return this;
+        return baseWhere(column, "=", value,  CustomType.ofType(JDBCType.VARCHAR), false, false);
     }
 
     public Builder where(RawStr rawStmt, IntArray values) {
-
-        wheres.add(
-                new WhereCompare(rawStmt, "",
-                        new StmtValue<>(CustomType.ofType(BuilderType.INTEGER_ARRAY), values)), true);
-
-        return this;
+        return baseWhere(rawStmt.getStmt(), "", values,  CustomType.ofType(BuilderType.INTEGER_ARRAY), true, true);
     }
 
     public Builder where(WhereQuery query) {
@@ -304,12 +338,7 @@ public class Builder implements BlockStmt {
     }
 
     public Builder whereIn(String column, StrArray values) {
-
-            wheres.add(
-                    new WhereCompare(EscapeStr.of(column), "IN",
-                        new StmtValue<>(CustomType.ofType(BuilderType.STRING_ARRAY), values)), true);
-
-        return this;
+        return baseWhere(column, "IN", values,  CustomType.ofType(BuilderType.STRING_ARRAY), true, false);
     }
 
     public Builder whereIn(String column, IntArray values) {
@@ -388,7 +417,7 @@ public class Builder implements BlockStmt {
         }
 
         if (wheres.isNotEmpty()) {
-            CompileResult r = wheres.compile();
+            CompileResult r = whereRoot.compile();
             s.append(" WHERE ").append(r.getSqlStmt());
             values.addAll(r.getParameter().getValues());
         }

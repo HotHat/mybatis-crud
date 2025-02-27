@@ -125,6 +125,7 @@ class BuilderTest {
                 .from("users")
                 .join("contacts", (join) -> {
                     join.on("contacts.user_id", "=", "users.id")
+                        .on("contacts.user_id", "=", "users.id")
                             .where("contacts.user_id", ">", "5");
                 });
 

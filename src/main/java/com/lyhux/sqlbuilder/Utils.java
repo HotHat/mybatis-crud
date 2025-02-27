@@ -27,9 +27,9 @@ public class Utils {
             if (i < arr.size() - 1) {
                 s.append(sep);
             }
-            values.addAll(r.getParameter());
+            values.addAll(r.getParameter().getValues());
         }
-        return new CompileResult(s.toString(), values);
+        return new CompileResult(s.toString(), new StmtParameter(values));
     }
 
     public static String strJoin(List<String> arr, String sep) {

@@ -3,6 +3,7 @@ package main.java.com.lyhux.sqlbuilder;
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -54,7 +55,7 @@ class WhereBlock extends StmtCompile {
         StringBuilder s = new StringBuilder();
 
         CompileResult r = group.compile();
-        List<StmtValue<?>> values = new ArrayList<StmtValue<?>>(r.getParameter());
+        StmtParameter values = new StmtParameter(r.getParameter().getValues());
 
         if (hiddenJoin) {
             if (group.isGroup()) {
@@ -99,18 +100,53 @@ class WhereCompare extends WhereStmt {
     @Override
     public CompileResult compile() {
         if (operator.contains("IN")) {
+            List<StmtValue<?>> val = new LinkedList<>();
             StringBuilder s = new StringBuilder();
-            List<?> val = Utils.castToType(value.value(), List.class);
-            for (int i = 0; i < val.size(); i++ ) {
-                s.append("?");
-                if (i < val.size() - 1) {
-                    s.append(", ");
+            // IN (?, ?, ?)
+            if (value.type().isJDBCType()) {
+                // val = Utils.castToType(value.value(), List.class);
+                // for (int i = 0; i < val.size(); i++ ) {
+                //     s.append("?");
+                //     if (i < val.size() - 1) {
+                //         s.append(", ");
+                //     }
+                // }
+            }
+            // IN (select * from xxx)
+            else {
+                switch (value.type().getBuilderType()) {
+                    case BUILDER -> {
+                        Builder b = Utils.castToType(value.value(), Builder.class);
+                        CompileResult r = b.compile();
+                        s.append(r.getSqlStmt());
+                        val = r.getParameter().getValues();
+                    }
+                    case STRING_ARRAY ->  {
+                        var item = Utils.castToType(value.value(), List.class);
+                        for (int i = 0; i < item.size(); i++ ) {
+                            s.append("?");
+                            if (i < item.size() - 1) {
+                                s.append(", ");
+                            }
+                            val.add(new StmtValue<String>(CustomType.ofType(JDBCType.VARCHAR), (String) item.get(i)));
+                        }
+                    }
+                    case INTEGER_ARRAY -> {
+                        var item = Utils.castToType(value.value(), List.class);
+                        for (int i = 0; i < item.size(); i++ ) {
+                            s.append("?");
+                            if (i < item.size() - 1) {
+                                s.append(", ");
+                            }
+                            val.add(new StmtValue<>(CustomType.ofType(JDBCType.VARCHAR), (Integer) item.get(i)));
+                        }
+                    }
                 }
             }
-            String moreMark = s.toString();
-            return new CompileResult(columnName + " " + operator + " (" + moreMark +")", Arrays.asList(value));
+
+            return new CompileResult(columnName + " " + operator + " (" + s +")", new StmtParameter(val));
         } else {
-            return new CompileResult(columnName + operator + "?", Arrays.asList(value));
+            return new CompileResult(columnName + operator + "?", new StmtParameter(value));
         }
     }
 }
@@ -141,10 +177,10 @@ class WhereStmt extends StmtCompile {
             }
             CompileResult r = current.compile();
             s.append(r.getSqlStmt());
-            values.addAll(r.getParameter());
+            values.addAll(r.getParameter().getValues());
         }
 
-        return new CompileResult(s.toString(), values);
+        return new CompileResult(s.toString(), new StmtParameter(values));
     }
 }
 
@@ -231,7 +267,7 @@ public class Builder implements BlockStmt {
 
             wheres.add(
                     new WhereCompare(column, "IN",
-                    new StmtValue<>(CustomType.ofType(JDBCType.valueOf("VARCHAR")), values)), true);
+                        new StmtValue<>(CustomType.ofType(BuilderType.STRING_ARRAY), values)), true);
 
         return this;
     }
@@ -240,7 +276,7 @@ public class Builder implements BlockStmt {
 
         wheres.add(
                 new WhereCompare(column, "IN",
-                        new StmtValue<>(CustomType.ofType(JDBCType.valueOf("BIGINT")), values)), true);
+                        new StmtValue<>(CustomType.ofType(BuilderType.INTEGER_ARRAY), values)), true);
 
         return this;
     }
@@ -295,7 +331,7 @@ public class Builder implements BlockStmt {
     @Override
     public CompileResult compile() {
         StringBuilder s = new StringBuilder();
-        List<StmtValue<?>> values = new ArrayList<>();
+        List<StmtValue<?>>  values = new LinkedList<>();
 
         if (!selects.isEmpty()) {
             s.append(" SELECT ")
@@ -307,21 +343,21 @@ public class Builder implements BlockStmt {
         if (!from.isEmpty()) {
             CompileResult r = Utils.stmtJoin(from, ", ");
             s.append(" FROM ").append(r.getSqlStmt());
-            values.addAll(r.getParameter());
+            values.addAll(r.getParameter().getValues());
         }
 
         if (!join.isEmpty()) {
             CompileResult r = Utils.stmtJoin(join, ", ");
             s.append(" JOIN ").append(r.getSqlStmt());
-            values.addAll(r.getParameter());
+            values.addAll(r.getParameter().getValues());
         }
 
         if (wheres.isNotEmpty()) {
             CompileResult r = wheres.compile();
             s.append(" WHERE ").append(r.getSqlStmt());
-            values.addAll(r.getParameter());
+            values.addAll(r.getParameter().getValues());
         }
 
-        return new CompileResult(s.toString(), values);
+        return new CompileResult(s.toString(), new StmtParameter(values));
     }
 }

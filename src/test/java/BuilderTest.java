@@ -70,8 +70,27 @@ class BuilderTest {
         Builder b = new Builder();
         b.select("id", "name")
                 .from("users")
+                .where("id", "5")
                 .whereIn("id", IntArray.asList(1, 2, 3))
                 .whereIn("name", StrArray.asList("1", "2", "3"))
+        ;
+
+        CompileResult result = b.compile();
+        System.out.println(result.getSqlStmt());
+        System.out.println(result.getParameter());
+    }
+
+    @Test
+    void testWhereInBuilder() throws SQLException {
+        Builder a = new Builder();
+        a.select("id")
+                .from("users")
+                .whereIn("id", IntArray.asList(1, 2, 3));
+
+        Builder b = new Builder();
+        b.select("id", "name")
+                .from("users")
+                .whereIn("id", a)
         ;
 
         CompileResult result = b.compile();

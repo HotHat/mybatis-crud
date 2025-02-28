@@ -1,6 +1,6 @@
 package main.java.com.lyhux.sqlbuilder;
 
-public class RawStr implements BlockStmt {
+public class RawStr implements Stmt {
     protected String stmt;
 
     public String getStmt() {

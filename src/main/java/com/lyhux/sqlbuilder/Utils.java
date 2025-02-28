@@ -6,7 +6,7 @@ import java.util.List;
 
 
 public class Utils {
-    public static String compileJoin(List<? extends StmtCompile> arr, String sep) {
+    public static String compileJoin(List<? extends AbstractStmt> arr, String sep) {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < arr.size(); i++ ) {
             s.append(arr.get(i).compile());
@@ -22,7 +22,7 @@ public class Utils {
         List<StmtValue<?>> values = new ArrayList<>();
 
         for (int i = 0; i < arr.size(); i++ ) {
-            var target = castToType(arr.get(i), BlockStmt.class);
+            var target = castToType(arr.get(i), Stmt.class);
             assert target != null;
             CompileResult r = target.compile();
             s.append(r.getSqlStmt());

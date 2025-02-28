@@ -1,6 +1,6 @@
 package main.java.com.lyhux.sqlbuilder;
 
-public interface BlockStmt {
+public interface Stmt {
     public boolean isBuilder();
     public boolean isRaw();
 

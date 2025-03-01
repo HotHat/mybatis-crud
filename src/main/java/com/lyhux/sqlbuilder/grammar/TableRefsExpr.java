@@ -10,8 +10,10 @@ public class TableRefsExpr implements Expr {
         tableRefs = new ArrayList<TableRefExpr>();
     }
 
+    public boolean isEmpty() { return tableRefs.isEmpty(); }
+
     public TableRefsExpr(TableRefExpr ref) {
-        tableRefs = new ArrayList<TableRefExpr>();
+        tableRefs = new ArrayList<>();
         tableRefs.add(ref);
     }
 

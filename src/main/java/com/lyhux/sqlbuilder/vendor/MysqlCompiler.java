@@ -151,7 +151,7 @@ public class MysqlCompiler {
         var alias = expr.getAlias();
 
         var result = compile(subTable);
-        sb.append(result.sql());
+        sb.append("(").append(result.sql()).append(")");
         var r = new ArrayList<ExprValue<?>>(result.bindings());
 
         if (!alias.isBlank()) {
@@ -160,12 +160,6 @@ public class MysqlCompiler {
 
         return new ExprResult(sb.toString(), r);
     }
-
-    public ExprResult compile(SelectStmt stmt) {
-
-        return new ExprResult("", new ArrayList<>());
-    }
-
 
     public String compile(TableNameExpr expr) {
         var sb = new StringBuilder();
@@ -196,5 +190,35 @@ public class MysqlCompiler {
         r.addAll(result.bindings());
 
         return new ExprResult(sb.toString(), r);
+    }
+
+    public ExprResult compile(SelectStmt stmt) {
+        var sb = new StringBuilder();
+
+        var selectExpr = stmt.getSelectExpr();
+        var tableRefs = stmt.getTableRefsExpr();
+        var whereExpr = stmt.getWhereExpr();
+
+        sb.append("SELECT ")
+                .append(compile(selectExpr));
+
+        ExprResult result;
+        var bindings = new ArrayList<ExprValue<?>>();
+
+        if (!tableRefs.isEmpty()) {
+            sb.append(" FROM ");
+            result = compile(tableRefs);
+            sb.append(result.sql());
+            bindings.addAll(result.bindings());
+        }
+
+        if (!whereExpr.isEmpty()) {
+            sb.append(" WHERE ");
+            result = compile(whereExpr);
+            sb.append(result.sql());
+            bindings.addAll(result.bindings());
+        }
+
+        return new ExprResult(sb.toString(), bindings);
     }
 }

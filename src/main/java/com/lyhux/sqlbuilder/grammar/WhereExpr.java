@@ -18,6 +18,7 @@ public final class WhereExpr implements WhereClauseExpr {
     public String getBool() { return bool; }
     public boolean isRoot() { return root; }
     public List<WhereClauseExpr> getConditions() { return conditions; }
+    public boolean isEmpty() { return conditions.isEmpty(); }
 
     public void add(WhereClauseExpr expr, String bool) {
         conditions.add(expr);
@@ -56,11 +57,16 @@ public final class WhereExpr implements WhereClauseExpr {
 
 
     public WhereExpr where(WhereNest query) {
-        var expr = new WhereExpr(false);
-        add(expr, "AND");
+        return  where(query, false, "AND");
+    }
+
+    public WhereExpr where(WhereNest query, boolean isRoot, String bool) {
+        var expr = new WhereExpr(isRoot);
+        add(expr, bool);
         query.where(expr);
         return this;
     }
+
 
     public WhereExpr orWhere(WhereNest query) {
         var expr = new WhereExpr();

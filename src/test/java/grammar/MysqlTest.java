@@ -63,4 +63,11 @@ public class MysqlTest {
         System.out.println(result.sql());
         System.out.println(result.bindings());
     }
+
+    public void print(SelectStmt stmt) {
+        var result = compiler.compile(stmt);
+        System.out.println(result.sql());
+        System.out.println(result.bindings());
+    }
+
 }

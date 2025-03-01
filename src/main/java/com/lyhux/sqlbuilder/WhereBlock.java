@@ -9,7 +9,6 @@ public class WhereBlock extends AbstractStmt {
 
     private boolean hiddenJoin = false;
 
-
     public void setHiddenJoin(boolean hiddenJoin) {
         this.hiddenJoin = hiddenJoin;
     }

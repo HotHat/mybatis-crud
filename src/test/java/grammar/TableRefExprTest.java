@@ -1,8 +1,6 @@
 package test.java.grammar;
 
-import main.java.com.lyhux.sqlbuilder.grammar.*;
-import main.java.com.lyhux.sqlbuilder.vendor.MysqlCompiler;
-import org.junit.jupiter.api.BeforeEach;
+import com.lyhux.sqlbuilder.grammar.*;
 import org.junit.jupiter.api.Test;
 
 public class TableRefExprTest extends MysqlTest {

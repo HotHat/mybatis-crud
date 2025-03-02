@@ -1,6 +1,6 @@
 package test.java.grammar;
 
-import main.java.com.lyhux.sqlbuilder.grammar.*;
+import com.lyhux.sqlbuilder.grammar.*;
 import org.junit.jupiter.api.Test;
 
 import java.sql.JDBCType;

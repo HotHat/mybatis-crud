@@ -1,6 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
-
-import main.java.com.lyhux.sqlbuilder.RawStr;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.util.ArrayList;
 import java.util.List;

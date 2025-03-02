@@ -1,4 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.sql.JDBCType;
 

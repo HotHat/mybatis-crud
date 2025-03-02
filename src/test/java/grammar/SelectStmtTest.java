@@ -1,6 +1,6 @@
 package test.java.grammar;
 
-import main.java.com.lyhux.sqlbuilder.grammar.SelectStmt;
+import com.lyhux.sqlbuilder.grammar.SelectStmt;
 import org.junit.jupiter.api.Test;
 
 public class SelectStmtTest extends MysqlTest {
@@ -48,6 +48,38 @@ public class SelectStmtTest extends MysqlTest {
 
         print(builder);
     }
+
+    @Test
+    public void testLeftJoinSelectStmt() {
+        var builder = new SelectStmt();
+
+        var table = new SelectStmt();
+        table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
+
+        builder.select("*")
+                .from("users")
+                .leftJoin("orders", "users.id", "=", "orders.user_id")
+        ;
+
+        print(builder);
+    }
+
+    @Test
+    public void testRightJoinSelectStmt() {
+        var builder = new SelectStmt();
+
+        var table = new SelectStmt();
+        table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
+
+        builder.select("*")
+                .from("users")
+                .leftJoin("orders", "users.id", "=", "orders.user_id")
+                .rightJoin("orders", "users.id", "=", "orders.user_id")
+        ;
+
+        print(builder);
+    }
+
     @Test
     public void testSubQueryWithJoinSelectStmt() {
         var builder = new SelectStmt();

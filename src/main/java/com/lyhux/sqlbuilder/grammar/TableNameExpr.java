@@ -1,4 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
 public final class TableNameExpr implements TableFactorExpr{
     String tableName;

@@ -1,4 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.sql.JDBCType;
 import java.util.ArrayList;
@@ -38,16 +38,16 @@ public final class WhereExpr implements WhereClauseExpr {
     }
 
     public WhereExpr whereIn(String column, List<String> value) {
-        return baseWhere(column, "IN", value, JDBCType.INTEGER, true, true);
+        return baseWhere(column, "IN", value, JDBCType.INTEGER, true, false);
     }
 
 
     public WhereExpr on(String column, String operator, String value) {
         var expr = new WhereExpr();
         expr.add(new BinaryExpr(
-                new RawStr(column),
+                new EscapedStr(column),
                 operator,
-                new RawStr(value),
+                new EscapedStr(value),
                 new ArrayList<ExprValue<?>>()
         ), "ON");
 

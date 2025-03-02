@@ -1,7 +1,7 @@
 package test.java.grammar;
 
-import main.java.com.lyhux.sqlbuilder.grammar.*;
-import main.java.com.lyhux.sqlbuilder.vendor.MysqlCompiler;
+import com.lyhux.sqlbuilder.grammar.*;
+import com.lyhux.sqlbuilder.vendor.MysqlCompiler;
 import org.junit.jupiter.api.BeforeEach;
 
 public class MysqlTest {

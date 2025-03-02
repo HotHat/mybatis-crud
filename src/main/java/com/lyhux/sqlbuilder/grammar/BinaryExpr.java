@@ -1,6 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
-
-import main.java.com.lyhux.sqlbuilder.StmtValue;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.util.List;
 

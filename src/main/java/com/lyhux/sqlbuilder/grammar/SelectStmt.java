@@ -1,4 +1,4 @@
-package main.java.com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.util.Arrays;
 
@@ -47,10 +47,22 @@ public final class SelectStmt implements Stmt {
     }
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn) {
+        return join(table, leftColumn, operator, rightColumn, "INNER");
+    }
+
+    public SelectStmt leftJoin(String table, String leftColumn, String operator, String rightColumn) {
+        return join(table, leftColumn, operator, rightColumn, "LEFT");
+    }
+
+    public SelectStmt rightJoin(String table, String leftColumn, String operator, String rightColumn) {
+        return join(table, leftColumn, operator, rightColumn, "RIGHT");
+    }
+
+    public SelectStmt join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
         var tableExpr = new TableNameExpr(table);
         var whereExpr = new WhereExpr(false);
         whereExpr.on(leftColumn, operator, rightColumn);
-        var joinedExpr = new TableJoinedExpr(tableExpr, whereExpr);
+        var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);
         assert !tableRefsExpr.isEmpty();
         var refs = tableRefsExpr.getTableRefs();
 

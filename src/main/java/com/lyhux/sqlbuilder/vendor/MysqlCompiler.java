@@ -1,10 +1,48 @@
-package main.java.com.lyhux.sqlbuilder.vendor;
+package com.lyhux.sqlbuilder.vendor;
 
-import main.java.com.lyhux.sqlbuilder.grammar.*;
+import com.lyhux.sqlbuilder.grammar.*;
 
 import java.util.ArrayList;
 
 public class MysqlCompiler {
+    public String escapeField(String field) {
+        var sb = new StringBuilder();
+        String[] asSplit = field.split("\\s+(as|AS)\\s+");
+
+        int outCount = 0;
+        for (String s : asSplit) {
+            //
+            if (s.equals("*")) {
+                sb.append(s);
+                outCount++;
+                continue;
+            }
+
+            var dotSplit = s.split("\\.");
+
+            int innerCount = 0;
+            for (String d : dotSplit) {
+                //
+                if (d.equals("*")) {
+                    sb.append(d);
+                    innerCount++;
+                    continue;
+                }
+
+                sb.append('`').append(d).append('`');
+                if (++innerCount < dotSplit.length) {
+                    sb.append(".");
+                }
+            }
+
+            if (++outCount < asSplit.length) {
+                sb.append(" AS ");
+            }
+        }
+
+        return sb.toString();
+    }
+
     public ExprResult compile(WhereClauseExpr expr) {
         var s = new StringBuilder();
         var r = new ArrayList<ExprValue<?>>();
@@ -61,7 +99,7 @@ public class MysqlCompiler {
                 return s.getValue();
             }
             case EscapedStr es -> {
-                return es.getValue();
+                return this.escapeField(es.getValue());
             }
         }
     }
@@ -73,7 +111,7 @@ public class MysqlCompiler {
         for (var exp : selects) {
             switch (exp) {
                 case RawStr s -> { sb.append(s.getValue()); }
-                case EscapedStr es -> { sb.append(es.getValue()); }
+                case EscapedStr es -> { sb.append(compile(es)); }
             }
 
             if (++count < selects.size()) {

@@ -5,6 +5,7 @@ import com.lyhux.sqlbuilder.grammar.insert.AssignExpr;
 import com.lyhux.sqlbuilder.grammar.insert.AssignListExpr;
 import com.lyhux.sqlbuilder.grammar.insert.ColumnExpr;
 import com.lyhux.sqlbuilder.grammar.insert.ValueGroupExpr;
+import com.lyhux.sqlbuilder.grammar.select.*;
 
 import java.util.ArrayList;
 
@@ -48,8 +49,8 @@ public class MysqlGrammar {
     }
 
     public ExprResult compile(WhereClauseExpr expr) {
-        var s = new StringBuilder();
-        var r = new ArrayList<ExprValue<?>>();
+        var sb = new StringBuilder();
+        var bindings = new ArrayList<ExprValue<?>>();
 
         switch (expr)
         {
@@ -58,9 +59,12 @@ public class MysqlGrammar {
                 var conditions = w.getConditions();
 
                 int count = 0;
-                if (conditions.size() > 1 && !w.isRoot()) {
-                    s.append("(");
+                boolean showBraces = w.isShowBraces();
+
+                if (showBraces) {
+                    sb.append("(");
                 }
+
                 for (var condition : conditions) {
                     var bool = switch (condition) {
                         case WhereExpr w1 -> w1.getBool();
@@ -68,30 +72,48 @@ public class MysqlGrammar {
                     };
 
                     if (count > 0) {
-                        s.append(" ").append(bool).append(" ");
+                        sb.append(" ").append(bool).append(" ");
                     }
                     count++;
 
                     var result = compile(condition);
-                    s.append(result.sql());
-                    r.addAll(result.bindings());
+                    sb.append(result.sql());
+                    bindings.addAll(result.bindings());
                 }
 
-                if (conditions.size() > 1 && !w.isRoot()) {
-                    s.append(")");
+                if (showBraces) {
+                    sb.append(")");
                 }
-                return new ExprResult(s.toString(), r);
+                return new ExprResult(sb.toString(), bindings);
             }
             case BinaryExpr b -> {
                 // column
-                s.append(compile(b.getColumn()));
+                sb.append(compile(b.getColumn()));
                 // operator
-                s.append(" ").append(b.getOperator()).append(" ");
-                // value
-                s.append(compile(b.getValue()));
-                r.addAll(b.getBindings());
+                sb.append(" ").append(b.getOperator()).append(" ");
 
-                return new ExprResult(s.toString(), r);
+                if (b.isBraceValue()) {
+                    sb.append("(");
+                }
+                // value
+                var value = b.getValue();
+                // is expr
+                if (value.isExpr()) {
+                    sb.append(compile(value.expr()));
+                    bindings.addAll(value.binding());
+                }
+                // is select stmt
+                else {
+                    var result = compile(value.stmt());
+                    sb.append(result.sql());
+                    bindings.addAll(result.bindings());
+                }
+
+                if (b.isBraceValue()) {
+                    sb.append(")");
+                }
+
+                return new ExprResult(sb.toString(), bindings);
             }
         }
     }

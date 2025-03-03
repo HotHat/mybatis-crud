@@ -57,18 +57,18 @@ public class InsertTest extends MysqlGrammarTest {
                 .columns("id", "name", "age", "gender")
                 .values((group) -> {
                     group
-                            .add(new ValueExpr<>(new EscapedStr("1")))
-                            .add(new ValueExpr<>(new RawStr("?"), ExprValue.of("name1")))
-                            .add(new ValueExpr<>(new EscapedStr("12")))
-                            .add(new ValueExpr<>(new EscapedStr("male")))
+                            .add("1")
+                            .add("name1")
+                            .add("12")
+                            .add("male")
                     ;
                 })
                 .values((group) -> {
                     group
-                            .add(new ValueExpr<>(new EscapedStr("2")))
-                            .add(new ValueExpr<>(new RawStr("?"), ExprValue.of("string value")))
-                            .add(new ValueExpr<>(new RawStr("?"), ExprValue.of(15)))
-                            .add(new ValueExpr<>(new EscapedStr("female")))
+                            .add(2)
+                            .addRaw("raw name")
+                            .add(15)
+                            .add("female")
                     ;
                 })
 

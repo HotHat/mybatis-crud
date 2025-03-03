@@ -1,12 +1,14 @@
 package com.lyhux.sqlbuilder.grammar;
 
-public record StmtExpr(ExprStr expr, SelectStmt stmt) {
-    public StmtExpr(ExprStr expr) {
-        this(expr, null);
+import java.util.List;
+
+public record StmtExpr<T>(ExprStr expr, SelectStmt stmt, List<ExprValue<T>> binding) {
+    public StmtExpr(ExprStr expr, List<ExprValue<T>> binding) {
+        this(expr, null, binding);
     }
 
     public StmtExpr(SelectStmt stmt) {
-        this(null, stmt);
+        this(null, stmt, null);
     }
 
     public boolean isExpr() { return this.expr != null; }

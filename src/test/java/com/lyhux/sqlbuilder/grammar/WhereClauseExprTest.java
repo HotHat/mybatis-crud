@@ -13,8 +13,8 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         expr.add(new BinaryExpr(
                 new EscapedStr("id"),
                 "=",
-                new RawStr("?"),
-                List.of(new ExprValue<>(JDBCType.INTEGER, 123))
+                new StmtExpr<>(new RawStr("?"),
+                List.of(new ExprValue<>(JDBCType.INTEGER, 123)))
                 ), "AND");
 
         expr.where("id", "123");
@@ -51,9 +51,29 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         print(expr);
     }
 
+    @Test
+    public void testWhereColumn() {
+        var expr = new WhereExpr();
 
+        expr.whereColumn("orders.user_id",  "users.id");
 
+        print(expr);
+    }
 
+    @Test
+    public void testWhereExists() {
+        var orders = new SelectStmt();
+        orders.selectRaw("1")
+                .from("orders")
+                .where((query) -> {
+                    query.whereColumn("orders.user_id",  "users.id");
+                });
+
+        var expr = new WhereExpr();
+        expr.whereExists(orders);
+
+        print(expr);
+    }
 
 
 }

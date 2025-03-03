@@ -1,9 +1,8 @@
 package com.lyhux.sqlbuilder.grammar;
 
+import com.lyhux.sqlbuilder.grammar.select.*;
+
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 public final class SelectStmt implements Stmt {
     SelectExpr selectExpr;

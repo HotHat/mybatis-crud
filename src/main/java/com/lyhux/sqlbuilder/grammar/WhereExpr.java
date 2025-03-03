@@ -7,22 +7,26 @@ import java.util.List;
 public final class WhereExpr implements WhereClauseExpr {
     String bool = "AND";
     boolean root = false;
-    WhereExpr parent = null;
+    boolean showBraces = false;
 
     List<WhereClauseExpr> conditions = new ArrayList<>();
 
     public WhereExpr() { root = true; }
-    public WhereExpr(boolean root) { this.root = root; }
-    public WhereExpr(WhereExpr parent) { this.root = false; this.parent = parent; }
+    public WhereExpr(boolean root) { this.root = root; showBraces = false; }
+    public WhereExpr(boolean root, boolean showBrackets) { this.root = root; this.showBraces = showBrackets; }
 
     public String getBool() { return bool; }
     public boolean isRoot() { return root; }
+    public boolean isShowBraces() { return showBraces; }
+
     public List<WhereClauseExpr> getConditions() { return conditions; }
     public boolean isEmpty() { return conditions.isEmpty(); }
 
     public void add(WhereClauseExpr expr, String bool) {
         conditions.add(expr);
         this.bool = bool;
+
+        showBraces = conditions.size() > 1 && !isRoot();
     }
 
     public WhereExpr where(String column, String value) {
@@ -37,6 +41,22 @@ public final class WhereExpr implements WhereClauseExpr {
         return where(column, operator, value, JDBCType.INTEGER);
     }
 
+    public WhereExpr where(String column, String operator, String value) {
+        return where(column, operator, value, JDBCType.VARCHAR);
+    }
+
+    public WhereExpr whereColumn(String column, String value) {
+        var expr = new WhereExpr();
+        expr.add(new BinaryExpr(
+                new EscapedStr(column),
+                "=",
+                new StmtExpr<>(new EscapedStr(value), new ArrayList<ExprValue<String>>())
+        ), "AND");
+
+        conditions.add(expr);
+        return this;
+    }
+
     public WhereExpr whereIn(String column, List<String> value) {
         return baseWhere(column, "IN", value, JDBCType.INTEGER, true, false);
     }
@@ -47,8 +67,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 new EscapedStr(column),
                 operator,
-                new EscapedStr(value),
-                new ArrayList<ExprValue<?>>()
+                new StmtExpr<>(new EscapedStr(value), new ArrayList<ExprValue<String>>())
         ), "ON");
 
         conditions.add(expr);
@@ -96,8 +115,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 isRaw ? new RawStr(column) : new EscapedStr(column),
                 operator,
-                new RawStr("?"),
-                List.of(new ExprValue<>(type, value))
+                new StmtExpr<>(new RawStr("?"), List.of(new ExprValue<>(type, value)))
         ), isAnd ? "AND" : "OR");
 
         conditions.add(expr);
@@ -107,7 +125,7 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public <T> WhereExpr baseWhere(String column, String operator, List<T> params, JDBCType type, boolean isAnd, boolean isRaw) {
         var expr = new WhereExpr(false);
-        var values = new ArrayList<ExprValue<?>>();
+        var values = new ArrayList<ExprValue<T>>();
         int count = 0;
         var mark = new StringBuilder();
         mark.append("(");
@@ -122,8 +140,7 @@ public final class WhereExpr implements WhereClauseExpr {
        expr.add(new BinaryExpr(
                 isRaw ? new RawStr(column) : new EscapedStr(column),
                 operator,
-                new RawStr(mark.toString()),
-                values
+                new StmtExpr<>(new RawStr(mark.toString()), values)
         ), isAnd ? "AND" : "OR");
 
         conditions.add(expr);
@@ -131,5 +148,20 @@ public final class WhereExpr implements WhereClauseExpr {
         return this;
     }
 
+    //
+    public WhereExpr whereExists(SelectStmt stmt) {
+        var expr = new WhereExpr(false, true);
+
+        expr.add(new BinaryExpr(
+                new RawStr(""),
+                "exists",
+                new StmtExpr<>(stmt),
+                true
+        ), "AND");
+
+        conditions.add(expr);
+
+        return this;
+    }
 
 }

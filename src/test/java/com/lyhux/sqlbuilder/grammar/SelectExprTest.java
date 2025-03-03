@@ -1,5 +1,6 @@
 package com.lyhux.sqlbuilder.grammar;
 
+import com.lyhux.sqlbuilder.grammar.select.SelectExpr;
 import org.junit.jupiter.api.Test;
 
 public class SelectExprTest extends MysqlGrammarTest {

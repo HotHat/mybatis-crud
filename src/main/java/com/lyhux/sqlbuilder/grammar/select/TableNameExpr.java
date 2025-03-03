@@ -1,6 +1,10 @@
-package com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar.select;
 
-public final class TableNameExpr implements TableFactorExpr{
+import com.lyhux.sqlbuilder.grammar.EscapedStr;
+import com.lyhux.sqlbuilder.grammar.ExprStr;
+import com.lyhux.sqlbuilder.grammar.RawStr;
+
+public final class TableNameExpr implements TableFactorExpr {
     ExprStr tableName;
     ExprStr alias;
 

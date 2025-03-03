@@ -1,4 +1,6 @@
-package com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar.select;
+
+import com.lyhux.sqlbuilder.grammar.SelectStmt;
 
 public final class TableSubExpr implements TableFactorExpr {
     SelectStmt selectStmt;

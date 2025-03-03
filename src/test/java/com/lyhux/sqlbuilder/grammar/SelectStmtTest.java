@@ -146,4 +146,22 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         print(table1);
     }
+
+    @Test
+    public void testWhereExists() {
+        var orders = new SelectStmt();
+        orders.selectRaw("1")
+                .from("orders")
+                .where((query) -> {
+                    query.whereColumn("orders.user_id",  "users.id");
+                });
+
+        var users = new SelectStmt();
+        users.from("users")
+                .where((query) -> {
+                    query.whereExists(orders);
+                });
+
+        print(users);
+    }
 }

@@ -1,4 +1,7 @@
-package com.lyhux.sqlbuilder.grammar;
+package com.lyhux.sqlbuilder.grammar.select;
+
+import com.lyhux.sqlbuilder.grammar.Expr;
+import com.lyhux.sqlbuilder.grammar.WhereExpr;
 
 public class TableJoinedExpr implements Expr {
     String joined;

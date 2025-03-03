@@ -1,10 +1,9 @@
-package test.java.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.*;
 import com.lyhux.sqlbuilder.vendor.MysqlCompiler;
 import org.junit.jupiter.api.BeforeEach;
 
-public class MysqlTest {
+public class MysqlGrammarTest {
     protected MysqlCompiler compiler;
 
 
@@ -68,6 +67,27 @@ public class MysqlTest {
         var result = compiler.compile(stmt);
         System.out.println(result.sql());
         System.out.println(result.bindings());
+    }
+
+    public void print(GroupByExpr stmt) {
+        var result = compiler.compile(stmt);
+        System.out.println(result.sql());
+        System.out.println(result.bindings());
+    }
+
+    public void print(OrderByExpr expr) {
+        var result = compiler.compile(expr);
+        System.out.println(result);
+    }
+
+    public void print(LimitExpr expr) {
+        var result = compiler.compile(expr);
+        System.out.println(result);
+    }
+
+    public void print(ForExpr expr) {
+        var result = compiler.compile(expr);
+        System.out.println(result);
     }
 
 }

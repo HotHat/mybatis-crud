@@ -1,12 +1,11 @@
-package test.java.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.*;
 import org.junit.jupiter.api.Test;
 
 import java.sql.JDBCType;
 import java.util.List;
 
-public class WhereClauseExprTest extends MysqlTest {
+public class WhereClauseExprTest extends MysqlGrammarTest {
 
     @Test
     public void testWhereClauseExpr() {

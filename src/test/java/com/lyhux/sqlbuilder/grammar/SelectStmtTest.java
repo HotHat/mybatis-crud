@@ -1,11 +1,10 @@
-package test.java.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.SelectStmt;
 import org.junit.jupiter.api.Test;
 
-public class SelectStmtTest extends MysqlTest {
+public class SelectStmtTest extends MysqlGrammarTest {
     @Test
-    public void testSimpleSelectStmt() {
+    public void testSimple() {
         var builder = new SelectStmt();
 
         builder.select("*")
@@ -21,7 +20,7 @@ public class SelectStmtTest extends MysqlTest {
     }
 
     @Test
-    public void testSubQuerySelectStmt() {
+    public void testSubQuery() {
         var builder = new SelectStmt();
 
         var table = new SelectStmt();
@@ -35,7 +34,7 @@ public class SelectStmtTest extends MysqlTest {
     }
 
     @Test
-    public void testJoinSelectStmt() {
+    public void testJoin() {
         var builder = new SelectStmt();
 
         var table = new SelectStmt();
@@ -50,7 +49,7 @@ public class SelectStmtTest extends MysqlTest {
     }
 
     @Test
-    public void testLeftJoinSelectStmt() {
+    public void testLeftJoin() {
         var builder = new SelectStmt();
 
         var table = new SelectStmt();
@@ -65,7 +64,7 @@ public class SelectStmtTest extends MysqlTest {
     }
 
     @Test
-    public void testRightJoinSelectStmt() {
+    public void testRightJoin() {
         var builder = new SelectStmt();
 
         var table = new SelectStmt();
@@ -81,7 +80,7 @@ public class SelectStmtTest extends MysqlTest {
     }
 
     @Test
-    public void testSubQueryWithJoinSelectStmt() {
+    public void testSubQueryWithJoin() {
         var builder = new SelectStmt();
 
         var table = new SelectStmt();
@@ -93,5 +92,58 @@ public class SelectStmtTest extends MysqlTest {
         ;
 
         print(builder);
+    }
+
+    @Test
+    public void testGroupBy() {
+        var table = new SelectStmt();
+        table
+                .from("users")
+                .where((query) -> { query.where("id", ">", 123);})
+                .groupBy("role", "type")
+                .having((query)-> {
+                    query.where("cnt", ">", 456);
+                })
+        ;
+
+        print(table);
+    }
+
+    @Test
+    public void testOrderBy() {
+        var table = new SelectStmt();
+        table
+                .from("users")
+                .where((query) -> { query.where("id", ">", 123);})
+                .orderBy("id", "desc")
+                .orderBy("name", "asc")
+
+        ;
+
+        print(table);
+    }
+
+    @Test
+    public void testLimit() {
+        var table = new SelectStmt();
+        table
+                .from("users")
+                .orderBy("name", "asc")
+                .limit(10)
+        ;
+
+        print(table);
+
+        var table1 = new SelectStmt();
+        table1
+                .select("user.id", "user.name", "orders.id AS order_id")
+                .selectRaw("orders.no AS order_no")
+                .from("users")
+                .from("orders", "ord")
+                .orderBy("name", "asc")
+                .limit(10, 5)
+        ;
+
+        print(table1);
     }
 }

@@ -108,6 +108,9 @@ public class MysqlCompiler {
         var sb = new StringBuilder();
         int count = 0;
         var selects = expr.getSelect();
+        if (selects.isEmpty()) {
+            sb.append("*");
+        }
         for (var exp : selects) {
             switch (exp) {
                 case RawStr s -> { sb.append(s.getValue()); }
@@ -201,9 +204,10 @@ public class MysqlCompiler {
 
     public String compile(TableNameExpr expr) {
         var sb = new StringBuilder();
-        sb.append(expr.getTableName());
-        if (!expr.getAlias().isBlank()) {
-            sb.append(" AS ").append(expr.getAlias());
+        sb.append(compile(expr.getTableName()));
+        if (!expr.getAlias().getValue().isBlank()) {
+            sb.append(" AS ")
+                    .append(compile(expr.getAlias()));
         }
         return sb.toString();
     }
@@ -236,13 +240,18 @@ public class MysqlCompiler {
         var selectExpr = stmt.getSelectExpr();
         var tableRefs = stmt.getTableRefsExpr();
         var whereExpr = stmt.getWhereExpr();
+        var groupByExpr = stmt.getGroupByExpr();
+        var orderByExpr = stmt.getOrderByExpr();
+        var limitExpr = stmt.getLimitExpr();
 
+        // select
         sb.append("SELECT ")
                 .append(compile(selectExpr));
 
         ExprResult result;
         var bindings = new ArrayList<ExprValue<?>>();
 
+        // from
         if (!tableRefs.isEmpty()) {
             sb.append(" FROM ");
             result = compile(tableRefs);
@@ -250,6 +259,7 @@ public class MysqlCompiler {
             bindings.addAll(result.bindings());
         }
 
+        // where
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
             result = compile(whereExpr);
@@ -257,6 +267,86 @@ public class MysqlCompiler {
             bindings.addAll(result.bindings());
         }
 
+        // group by having
+        if (groupByExpr != null) {
+            sb.append(" GROUP BY ");
+            result = compile(groupByExpr);
+            sb.append(result.sql());
+            bindings.addAll(result.bindings());
+        }
+
+        // order by
+        if (orderByExpr != null) {
+            sb.append(" ORDER BY ").append(compile(orderByExpr));
+        }
+
+        // limit
+        if (limitExpr != null) {
+            sb.append(" LIMIT ").append(compile(limitExpr));
+        }
+        // for
+
         return new ExprResult(sb.toString(), bindings);
+    }
+
+    public ExprResult compile(GroupByExpr expr) {
+        var sb = new StringBuilder();
+        var columns = expr.getColumns();
+        var having = expr.getHaving();
+
+        if (!columns.isEmpty()) {
+            int count = 0;
+            for (var exp : columns) {
+                sb.append(compile(exp));
+                if (++count < columns.size()) { sb.append(", "); }
+            }
+        }
+
+        var bindings = new ArrayList<ExprValue<?>>();
+        if (!having.isEmpty()) {
+            sb.append(" HAVING ");
+            var result = compile(having.getExpr());
+            sb.append(result.sql());
+            bindings.addAll(result.bindings());
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
+
+    public String compile(OrderByExpr expr) {
+        var sb = new StringBuilder();
+        var columns = expr.getItems();
+
+        if (!columns.isEmpty()) {
+            int count = 0;
+            for (var exp : columns) {
+                sb.append(compile(exp.column())).append(" ").append(exp.order().toUpperCase());
+                if (++count < columns.size()) { sb.append(", "); }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public String compile(LimitExpr expr) {
+        return expr.rowCount() + (expr.offset() > 0 ? " OFFSET " + expr.offset() : "");
+    }
+
+    public String compile(ForExpr expr) {
+        var sb = new StringBuilder();
+        var tableNames = expr.getTableNames();
+        var mode = expr.getModel();
+
+        sb.append(mode.toUpperCase());
+        if (!tableNames.isEmpty()) {
+            sb.append(" OF ");
+            int count = 0;
+            for (var exp : tableNames) {
+                sb.append(compile(exp));
+                if (++count < tableNames.size()) { sb.append(", "); }
+            }
+        }
+
+        return sb.toString();
     }
 }

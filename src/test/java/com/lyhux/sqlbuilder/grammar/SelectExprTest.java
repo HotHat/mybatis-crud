@@ -1,13 +1,15 @@
-package test.java.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.EscapedStr;
-import com.lyhux.sqlbuilder.grammar.RawStr;
-import com.lyhux.sqlbuilder.grammar.SelectExpr;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+public class SelectExprTest extends MysqlGrammarTest {
 
-public class SelectExprTest extends MysqlTest {
+    @Test
+    public void testEmptySelectExpr() {
+        var expr = new SelectExpr();
+
+        print(expr);
+    }
 
     @Test
     public void testSelectExpr() {

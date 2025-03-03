@@ -1,21 +1,35 @@
 package com.lyhux.sqlbuilder.grammar;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public final class SelectStmt implements Stmt {
     SelectExpr selectExpr;
     TableRefsExpr tableRefsExpr;
     WhereExpr whereExpr;
+    GroupByExpr groupByExpr;
+    OrderByExpr orderByExpr;
+    LimitExpr limitExpr;
+    ForExpr forExpr;
 
     public SelectStmt() {
         selectExpr = new SelectExpr();
         tableRefsExpr = new TableRefsExpr();
         whereExpr = new WhereExpr();
+
+        groupByExpr = null;
+        orderByExpr = null;
+        limitExpr = null;
     }
 
     public SelectExpr getSelectExpr() { return selectExpr; }
     public TableRefsExpr getTableRefsExpr() { return tableRefsExpr; }
     public WhereExpr getWhereExpr() { return whereExpr; }
+    public GroupByExpr getGroupByExpr() { return groupByExpr; }
+    public OrderByExpr getOrderByExpr() { return orderByExpr; }
+    public LimitExpr getLimitExpr() { return limitExpr; }
 
     public SelectStmt select(String... fields) {
         selectExpr.addAll(Arrays.stream(fields).map(EscapedStr::new).toList());
@@ -37,7 +51,11 @@ public final class SelectStmt implements Stmt {
     }
 
     public SelectStmt from(String table, String alias) {
-        tableRefsExpr.add(new TableRefExpr(new TableNameExpr(table, alias)));
+        tableRefsExpr.add(
+                new TableRefExpr(
+                        new TableNameExpr(
+                                new EscapedStr(table),
+                                new EscapedStr(alias))));
         return this;
     }
 
@@ -59,7 +77,7 @@ public final class SelectStmt implements Stmt {
     }
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
-        var tableExpr = new TableNameExpr(table);
+        var tableExpr = new TableNameExpr(new EscapedStr(table));
         var whereExpr = new WhereExpr(false);
         whereExpr.on(leftColumn, operator, rightColumn);
         var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);
@@ -71,4 +89,50 @@ public final class SelectStmt implements Stmt {
 
         return this;
     }
+
+    // group by
+    public SelectStmt groupBy(String... columns) {
+        this.groupByExpr = new GroupByExpr();
+        for (String column : columns) {
+            this.groupByExpr.groupBy(new EscapedStr(column));
+        }
+
+        return this;
+    }
+
+    public SelectStmt having(WhereNest query) {
+        if (groupByExpr != null) {
+            groupByExpr.having(query);
+        }
+
+        return this;
+    }
+
+    // order by
+    public SelectStmt orderBy(String columns, String order) {
+        if (orderByExpr == null) {
+            orderByExpr = new OrderByExpr();
+        }
+        orderByExpr.add(new OrderByItem(new EscapedStr(columns), order));
+
+        return this;
+    }
+
+    // limit
+    public SelectStmt limit(int rowCount) {
+        limitExpr = new LimitExpr(rowCount);
+        return this;
+    }
+
+    public SelectStmt limit(int rowCount, int offset) {
+        limitExpr = new LimitExpr(rowCount, offset);
+        return this;
+    }
+
+    // for update | share
+    public SelectStmt forUpdate() {
+        forExpr = new ForExpr("UPDATE");
+        return this;
+    }
+
 }

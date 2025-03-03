@@ -1,18 +1,17 @@
-package test.java.grammar;
+package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.*;
 import org.junit.jupiter.api.Test;
 
-public class TableRefExprTest extends MysqlTest {
+public class TableRefExprTest extends MysqlGrammarTest {
 
 
 
     @Test
     public void testTableNameExpr() {
-        var table = new TableNameExpr("users");
+        var table = new TableNameExpr(new EscapedStr("users"));
         print(table);
 
-        var tableAlias = new TableNameExpr("users", "alias");
+        var tableAlias = new TableNameExpr(new EscapedStr("users"), new EscapedStr("alias"));
         print(tableAlias);
     }
 
@@ -23,7 +22,7 @@ public class TableRefExprTest extends MysqlTest {
 
     @Test
     public void testTableJoinExpr() {
-        var table = new TableNameExpr("users");
+        var table = new TableNameExpr(new EscapedStr("users"));
         var where = new WhereExpr(false);
         where.on("users.id", "=", "orders.user_id").where("users.id", ">", 13);
         var joinedExpr = new TableJoinedExpr(table, where);

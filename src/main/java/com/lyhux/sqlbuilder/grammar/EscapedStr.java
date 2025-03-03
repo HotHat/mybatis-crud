@@ -9,8 +9,4 @@ public final class EscapedStr implements ExprStr {
 
     public String getValue() { return value; }
 
-    @Override
-    public boolean isEscape() {
-        return true;
-    }
 }

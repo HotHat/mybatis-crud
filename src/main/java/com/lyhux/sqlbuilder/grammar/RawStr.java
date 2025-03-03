@@ -8,9 +8,4 @@ public final class RawStr implements ExprStr {
     }
 
     public String getValue() { return value; }
-
-    @Override
-    public boolean isRaw() {
-        return true;
-    }
 }

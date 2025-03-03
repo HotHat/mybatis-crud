@@ -19,7 +19,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
 
         expr.where("id", "123");
 
-        var result = compiler.compile(expr);
+        var result = grammar.compile(expr);
         print(result);
     }
 
@@ -39,7 +39,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
                 })
                 .where("l0_w2", "l0_w2");
 
-        var result = compiler.compile(expr);
+        var result = grammar.compile(expr);
         print(result);
     }
 

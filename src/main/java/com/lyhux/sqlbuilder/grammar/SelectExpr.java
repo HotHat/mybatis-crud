@@ -3,7 +3,7 @@ package com.lyhux.sqlbuilder.grammar;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectExpr {
+public class SelectExpr implements Expr {
     List<ExprStr> select;
 
     public List<ExprStr> getSelect() {

@@ -1,10 +1,14 @@
 package com.lyhux.sqlbuilder.vendor;
 
 import com.lyhux.sqlbuilder.grammar.*;
+import com.lyhux.sqlbuilder.grammar.insert.AssignExpr;
+import com.lyhux.sqlbuilder.grammar.insert.AssignListExpr;
+import com.lyhux.sqlbuilder.grammar.insert.ColumnExpr;
+import com.lyhux.sqlbuilder.grammar.insert.ValueGroupExpr;
 
 import java.util.ArrayList;
 
-public class MysqlCompiler {
+public class MysqlGrammar {
     public String escapeField(String field) {
         var sb = new StringBuilder();
         String[] asSplit = field.split("\\s+(as|AS)\\s+");
@@ -349,4 +353,90 @@ public class MysqlCompiler {
 
         return sb.toString();
     }
+
+    // insert statements
+    public String compile(ColumnExpr expr) {
+        var sb = new StringBuilder();
+        var columns = expr.getColumns();
+        int count = 0;
+        for (var exp : columns) {
+            sb.append(compile(exp));
+            if (++count < columns.size()) { sb.append(", "); }
+        }
+        return sb.toString();
+    }
+
+    public ExprResult compile(ValueGroupExpr expr) {
+        var sb = new StringBuilder();
+        var bindings = new ArrayList<ExprValue<?>>();
+        var columns = expr.getValueExpr();
+        int count = 0;
+        for (var exp : columns) {
+            var column = exp.expr();
+            sb.append(switch (column) {
+                case RawStr rs -> column.getValue();
+                case EscapedStr es -> "'" + column.getValue() + "'";
+            });
+            if (exp.binding() != null) {
+                bindings.add(exp.binding());
+            }
+
+            if (++count < columns.size()) { sb.append(", "); }
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
+
+    public String compile(AssignExpr expr) {
+        return compile(expr.column()) + '=' + compile(expr.value());
+    }
+
+    public String compile(AssignListExpr expr) {
+        var sb = new StringBuilder();
+        var assigns = expr.getAssignExpr();
+        int count = 0;
+        for (var exp : assigns) {
+            sb.append(compile(exp));
+            if (++count < assigns.size()) { sb.append(", "); }
+        }
+
+        return sb.toString();
+    }
+
+    public ExprResult compile(InsertStmt stmt) {
+        var sb = new StringBuilder();
+        var bindings = new ArrayList<ExprValue<?>>();
+
+        var tableName = stmt.getTableName();
+        var columns = stmt.getColumns();
+        var values = stmt.getValues();
+        var assigns = stmt.getAssigns();
+
+        sb.append("INSERT INTO ");
+        sb.append(compile(tableName));
+        sb.append(" (");
+        sb.append(compile(columns));
+        sb.append(" )");
+        sb.append(" VALUES ");
+
+        var valueGroup = values.getValues();
+        int count = 0;
+        for (var val : valueGroup) {
+            sb.append("(");
+            var result = compile(val);
+            sb.append(result.sql());
+            bindings.addAll(result.bindings());
+            sb.append(")");
+
+            if (++count < valueGroup.size()) { sb.append(", "); }
+        }
+
+        if (!assigns.isEmpty()) {
+            sb.append(" ON DUPLICATE KEY UPDATE ");
+            sb.append(compile(assigns));
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
+
 }

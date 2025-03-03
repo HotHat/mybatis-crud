@@ -1,5 +1,6 @@
 package test.java;
 
+import com.lyhux.sqlbuilder.grammar.ExprValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,9 +9,8 @@ import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.TimeZone;
 
 
 public class ConnectionTest {
@@ -23,9 +23,9 @@ public class ConnectionTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+        // Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
 
-        conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        // conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
     }
 
 
@@ -100,6 +100,22 @@ public class ConnectionTest {
         }
 
         System.out.printf("insert result: %d\n", result);
+    }
 
+    @Test
+    public void testTimestamp() throws SQLException {
+        // TimeZone newTimeZone = TimeZone.getTimeZone("America/Los_Angeles"); // Example: Pacific Time
+        // TimeZone.setDefault(newTimeZone);
+
+        var zoneId = ZoneId.systemDefault();
+        var localDateTime = LocalDateTime.now();
+        ZonedDateTime zonedDateTime = localDateTime.atZone(zoneId);
+
+        // Convert ZonedDateTime to Instant
+        Instant instant = zonedDateTime.toInstant();
+        var timestamp =  Timestamp.from(instant);
+
+        System.out.printf("zone id: %s\n", zoneId );
+        System.out.printf("local date time: %s, timestamp: %s\n", localDateTime, timestamp);
     }
 }

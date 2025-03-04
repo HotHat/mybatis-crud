@@ -5,7 +5,7 @@ import com.lyhux.sqlbuilder.grammar.select.*;
 import java.util.Arrays;
 
 public final class SelectStmt implements Stmt {
-    SelectExpr selectExpr;
+    SelectExpr selectExpr, backupSelectExpr;
     TableRefsExpr tableRefsExpr;
     WhereExpr whereExpr;
     GroupByExpr groupByExpr;
@@ -21,6 +21,18 @@ public final class SelectStmt implements Stmt {
         groupByExpr = new GroupByExpr();
         orderByExpr = new OrderByExpr();
         limitExpr = null;
+    }
+
+    public SelectStmt replaceSelect() {
+        backupSelectExpr = selectExpr;
+        selectExpr = new SelectExpr();
+        return this;
+    }
+
+    public SelectStmt recoverSelect() {
+        selectExpr = backupSelectExpr;
+        backupSelectExpr = null;
+        return this;
     }
 
     public SelectExpr getSelectExpr() { return selectExpr; }
@@ -60,6 +72,25 @@ public final class SelectStmt implements Stmt {
 
     public SelectStmt where(WhereNest query) {
         whereExpr.where(query, true, "AND");
+        return this;
+    }
+
+    public SelectStmt orWhere(WhereNest query) {
+        whereExpr.where(query, true, "OR");
+        return this;
+    }
+
+    public SelectStmt when(boolean test, WhereNest query) {
+        if (test) {
+            whereExpr.where(query, true, "AND");
+        }
+        return this;
+    }
+
+    public SelectStmt orWhen(boolean test, WhereNest query) {
+        if (test) {
+            whereExpr.where(query, true, "OR");
+        }
         return this;
     }
 

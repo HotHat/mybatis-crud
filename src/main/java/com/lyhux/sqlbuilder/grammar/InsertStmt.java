@@ -10,6 +10,14 @@ public final class InsertStmt implements Stmt {
     ValuesExpr values;
     AssignListExpr assigns;
 
+    public InsertStmt() {
+        this(new RawStr(""));
+    }
+
+    public InsertStmt(String tableName) {
+        this(new EscapedStr(tableName));
+    }
+
     public InsertStmt(ExprStr tableName) {
         this.tableName = tableName;
         columns = new ColumnExpr();
@@ -22,6 +30,10 @@ public final class InsertStmt implements Stmt {
     public ValuesExpr getValues() { return values; }
     public AssignListExpr getAssigns() { return assigns; }
 
+    public InsertStmt table(String tableName) {
+        this.tableName = new EscapedStr(tableName);
+        return this;
+    }
 
     public InsertStmt columns(String... columns) {
         this.columns.addAll(Arrays.stream(columns).map(EscapedStr::new).toList());

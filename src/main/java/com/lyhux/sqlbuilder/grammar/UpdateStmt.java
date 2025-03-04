@@ -1,7 +1,7 @@
 package com.lyhux.sqlbuilder.grammar;
 
 import com.lyhux.sqlbuilder.grammar.update.AssignListExpr;
-import com.lyhux.sqlbuilder.grammar.update.SetNest;
+import com.lyhux.sqlbuilder.grammar.update.AssignNest;
 
 public final class UpdateStmt implements Stmt{
     TableRefExpr tableRef;
@@ -9,6 +9,10 @@ public final class UpdateStmt implements Stmt{
     WhereExpr whereExpr;
     OrderByExpr orderBy;
     LimitExpr limit;
+
+    public UpdateStmt() {
+        this("");
+    }
 
     public UpdateStmt(String table) {
         this.tableRef = new TableRefExpr(
@@ -29,11 +33,20 @@ public final class UpdateStmt implements Stmt{
     public LimitExpr getLimit() { return limit; }
 
 
+    public UpdateStmt table(String table) {
+        this.tableRef = new TableRefExpr(
+            new TableNameExpr(
+                new EscapedStr(table),
+                new EscapedStr(""))
+        );
+        return this;
+    }
+
     public UpdateStmt where(WhereNest nest) {
         nest.where(whereExpr);
         return this;
     }
-    public UpdateStmt set(SetNest nest) {
+    public UpdateStmt set(AssignNest nest) {
         nest.updateSet(assignments);
         return this;
     }

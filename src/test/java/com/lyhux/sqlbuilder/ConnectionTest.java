@@ -1,5 +1,7 @@
 package com.lyhux.sqlbuilder;
 
+import com.lyhux.sqlbuilder.grammar.InsertStmt;
+import com.lyhux.sqlbuilder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,9 +23,9 @@ public class ConnectionTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        // Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
+        Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
 
-        // conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
     }
 
 
@@ -115,5 +117,86 @@ public class ConnectionTest {
 
         System.out.printf("zone id: %s\n", zoneId );
         System.out.printf("local date time: %s, timestamp: %s\n", localDateTime, timestamp);
+    }
+
+    @Test
+    public void testInsertStmt() throws SQLException {
+        var insert = new InsertStmt("user");
+
+        insert.columns("username", "password", "gender", "email", "created_at", "updated_at")
+            .values((group -> {
+                group
+                    .add("super_admin")
+                    .add("123456")
+                    .add(1)
+                    .add("mama@gmail.com")
+                    .add(LocalDateTime.now())
+                    // .add(Timestamp.from(Instant.now()))
+                    .addNull();
+
+            }));
+
+        var grammar = new MysqlGrammar();
+        var result = grammar.compile(insert);
+        var prepare = conn.prepareStatement(result.statement(), PreparedStatement.RETURN_GENERATED_KEYS);
+        // prepare.execute();
+
+        int count = 1;
+        for (var it : result.bindings()) {
+            prepare.setObject(count++, it.value());
+        }
+
+        int ret = prepare.executeUpdate();
+        if (ret == 1) {
+            var primaryKeySet = prepare.getGeneratedKeys();
+            if (primaryKeySet.next()) {
+                var primaryKey = primaryKeySet.getLong(1);
+                System.out.println("Primary key: " + primaryKey);
+            }
+        }
+    }
+
+    @Test
+    public void testBuilderInert() throws SQLException {
+        var builder = new Builder(conn, new MysqlGrammar());
+        var primaryKey = builder.insert((insert) -> {
+            insert
+                .table("user")
+                .columns("username", "password", "gender", "email", "created_at", "updated_at")
+                .values((group -> {
+                    group
+                        .add("super_admin2")
+                        .add("123456")
+                        .add(1)
+                        .add("mama@gmail.com")
+                        .add(LocalDateTime.now())
+                        // .add(Timestamp.from(Instant.now()))
+                        .addNull();
+
+                }));
+        });
+
+        System.out.println("Primary key: " + primaryKey);
+    }
+
+    @Test
+    public void testBuilderUpdate() throws SQLException {
+        var builder = new Builder(conn, new MysqlGrammar());
+        var primaryKey = builder.update((update) -> {
+            update
+                .table("user")
+                .set((assign) -> {
+                    assign
+                        .set("username", "update_test")
+                        .set("password", "666666")
+                        .set("created_at", Timestamp.from(Instant.now()))
+                        .setNull("updated_at");
+                })
+                .where((query) -> {
+                    query.where("id", ">", 10);
+                });
+        });
+
+        System.out.println("Primary key: " + primaryKey);
     }
 }

@@ -1,8 +1,5 @@
 package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.update.AssignListExpr;
-import com.lyhux.sqlbuilder.grammar.update.SetNest;
-
 public final class DeleteStmt implements Stmt {
     TableRefExpr tableRef;
     WhereExpr whereExpr;

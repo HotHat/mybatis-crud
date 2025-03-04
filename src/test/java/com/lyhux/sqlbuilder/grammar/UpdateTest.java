@@ -2,16 +2,15 @@ package com.lyhux.sqlbuilder.grammar;
 
 import com.lyhux.sqlbuilder.grammar.update.AssignExpr;
 import com.lyhux.sqlbuilder.grammar.update.AssignListExpr;
-import com.mysql.cj.xdevapi.UpdateStatement;
 import org.junit.jupiter.api.Test;
 
 public class UpdateTest extends MysqlGrammarTest {
     @Test
     public void testAssign() {
         var assign = new AssignListExpr();
-        assign.add(new AssignExpr<>(new EscapedStr("column"), new BindingValue<>(new EscapedStr("value"))));
+        assign.set(new AssignExpr<>(new EscapedStr("column"), new BindingValue<>(new EscapedStr("value"))));
 
-        assign.add(new AssignExpr<>(
+        assign.set(new AssignExpr<>(
                 new EscapedStr("column"),
                 new BindingValue<>(new RawStr("?"), TypeValue.of(1234))));
 
@@ -24,9 +23,9 @@ public class UpdateTest extends MysqlGrammarTest {
         update
                 .set((set) -> {
                     set
-                            .add("id", 1)
-                            .add("name", "lyhux")
-                            .addRaw("email", "hello@gmail.com")
+                            .set("id", 1)
+                            .set("name", "lyhux")
+                            .setRaw("email", "hello@gmail.com")
                     ;
 
                 })
@@ -41,9 +40,9 @@ public class UpdateTest extends MysqlGrammarTest {
         update
                 .set((set) -> {
                     set
-                            .add("id", 1)
-                            .add("name", "lyhux")
-                            .addRaw("email", "hello@gmail.com")
+                            .set("id", 1)
+                            .set("name", "lyhux")
+                            .setRaw("email", "hello@gmail.com")
                     ;
 
                 })

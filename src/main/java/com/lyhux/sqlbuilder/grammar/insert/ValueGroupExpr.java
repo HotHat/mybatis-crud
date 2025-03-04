@@ -76,5 +76,10 @@ public class ValueGroupExpr {
         return this;
     }
 
+    public ValueGroupExpr addNull() {
+        this.valueExpr.add(new BindingValue<>(new RawStr("?"), TypeValue.of()));
+        return this;
+    }
+
 
 }

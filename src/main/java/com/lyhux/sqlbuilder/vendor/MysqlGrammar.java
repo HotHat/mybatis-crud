@@ -9,7 +9,7 @@ import com.lyhux.sqlbuilder.grammar.select.*;
 
 import java.util.ArrayList;
 
-public class MysqlGrammar {
+public class MysqlGrammar implements Grammar {
     public String escapeField(String field) {
         var sb = new StringBuilder();
         String[] asSplit = field.split("\\s+(as|AS)\\s+");
@@ -578,5 +578,15 @@ public class MysqlGrammar {
         }
 
         return new ExprResult(sb.toString(), bindings);
+    }
+
+    @Override
+    public ExprResult compile(Stmt stmt) {
+        return switch (stmt) {
+            case SelectStmt select -> compile(select);
+            case InsertStmt insert -> compile(insert);
+            case UpdateStmt update -> compile(update);
+            case DeleteStmt delete -> compile(delete);
+        };
     }
 }

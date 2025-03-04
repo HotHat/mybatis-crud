@@ -1,6 +1,4 @@
-package com.lyhux.sqlbuilder.grammar.select;
-
-import com.lyhux.sqlbuilder.grammar.Expr;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.util.ArrayList;
 import java.util.List;

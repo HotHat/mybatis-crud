@@ -1,6 +1,4 @@
-package com.lyhux.sqlbuilder.grammar.select;
-
-import com.lyhux.sqlbuilder.grammar.Expr;
+package com.lyhux.sqlbuilder.grammar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +9,8 @@ public final class OrderByExpr implements Expr {
     public OrderByExpr() {
         items = new ArrayList<OrderByItem>();
     }
+
+    public boolean isEmpty() { return items.isEmpty(); }
 
     public OrderByExpr add(OrderByItem item) {
         items.add(item);

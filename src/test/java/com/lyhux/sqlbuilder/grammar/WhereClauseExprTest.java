@@ -13,8 +13,8 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         expr.add(new BinaryExpr(
                 new EscapedStr("id"),
                 "=",
-                new StmtExpr<>(new RawStr("?"),
-                List.of(new ExprValue<>(JDBCType.INTEGER, 123)))
+                new BindingValue<>(new RawStr("?"),
+                List.of(new TypeValue<>(JDBCType.INTEGER, 123)))
                 ), "AND");
 
         expr.where("id", "123");

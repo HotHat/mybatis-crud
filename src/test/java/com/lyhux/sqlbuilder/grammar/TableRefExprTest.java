@@ -1,9 +1,5 @@
 package com.lyhux.sqlbuilder.grammar;
 
-import com.lyhux.sqlbuilder.grammar.select.TableJoinedExpr;
-import com.lyhux.sqlbuilder.grammar.select.TableNameExpr;
-import com.lyhux.sqlbuilder.grammar.select.TableRefExpr;
-import com.lyhux.sqlbuilder.grammar.select.TableRefsExpr;
 import org.junit.jupiter.api.Test;
 
 public class TableRefExprTest extends MysqlGrammarTest {

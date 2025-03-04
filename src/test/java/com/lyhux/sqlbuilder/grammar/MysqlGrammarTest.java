@@ -23,12 +23,12 @@ public class MysqlGrammarTest {
 
     public void print(WhereClauseExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(ExprResult result) {
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
@@ -39,43 +39,43 @@ public class MysqlGrammarTest {
 
     public void print(TableSubExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(TableFactorExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(TableJoinedExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(TableRefExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(TableRefsExpr expr) {
         var result = grammar.compile(expr);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(SelectStmt stmt) {
         var result = grammar.compile(stmt);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
     public void print(GroupByExpr stmt) {
         var result = grammar.compile(stmt);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
@@ -102,7 +102,7 @@ public class MysqlGrammarTest {
 
     public void print(ValueGroupExpr stmt) {
         var result = grammar.compile(stmt);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
@@ -113,7 +113,19 @@ public class MysqlGrammarTest {
 
     public void print(InsertStmt stmt) {
         var result = grammar.compile(stmt);
-        System.out.println(result.sql());
+        System.out.println(result.statement());
+        System.out.println(result.bindings());
+    }
+
+    public void print(com.lyhux.sqlbuilder.grammar.update.AssignListExpr stmt) {
+        var result = grammar.compile(stmt);
+        System.out.println(result.statement());
+        System.out.println(result.bindings());
+    }
+
+    public void print(UpdateStmt stmt) {
+        var result = grammar.compile(stmt);
+        System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 }

@@ -50,7 +50,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 new EscapedStr(column),
                 "=",
-                new StmtExpr<>(new EscapedStr(value), new ArrayList<ExprValue<String>>())
+                new BindingValue<>(new EscapedStr(value), new ArrayList<TypeValue<String>>())
         ), "AND");
 
         conditions.add(expr);
@@ -67,7 +67,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 new EscapedStr(column),
                 operator,
-                new StmtExpr<>(new EscapedStr(value), new ArrayList<ExprValue<String>>())
+                new BindingValue<>(new EscapedStr(value), new ArrayList<TypeValue<String>>())
         ), "ON");
 
         conditions.add(expr);
@@ -115,7 +115,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 isRaw ? new RawStr(column) : new EscapedStr(column),
                 operator,
-                new StmtExpr<>(new RawStr("?"), List.of(new ExprValue<>(type, value)))
+                new BindingValue<>(new RawStr("?"), List.of(new TypeValue<>(type, value)))
         ), isAnd ? "AND" : "OR");
 
         conditions.add(expr);
@@ -125,12 +125,12 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public <T> WhereExpr baseWhere(String column, String operator, List<T> params, JDBCType type, boolean isAnd, boolean isRaw) {
         var expr = new WhereExpr(false);
-        var values = new ArrayList<ExprValue<T>>();
+        var values = new ArrayList<TypeValue<T>>();
         int count = 0;
         var mark = new StringBuilder();
         mark.append("(");
         for (T t : params) {
-            values.add(new ExprValue<>(type, t));
+            values.add(new TypeValue<>(type, t));
             mark.append("?");
             if (++count < params.size()) {
                 mark.append(", ");
@@ -140,7 +140,7 @@ public final class WhereExpr implements WhereClauseExpr {
        expr.add(new BinaryExpr(
                 isRaw ? new RawStr(column) : new EscapedStr(column),
                 operator,
-                new StmtExpr<>(new RawStr(mark.toString()), values)
+                new BindingValue<>(new RawStr(mark.toString()), values)
         ), isAnd ? "AND" : "OR");
 
         conditions.add(expr);
@@ -155,7 +155,7 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 new RawStr(""),
                 "exists",
-                new StmtExpr<>(stmt),
+                new BindingValue<>(stmt),
                 true
         ), "AND");
 

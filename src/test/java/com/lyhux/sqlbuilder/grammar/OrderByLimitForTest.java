@@ -1,9 +1,6 @@
 package com.lyhux.sqlbuilder.grammar;
 
 import com.lyhux.sqlbuilder.grammar.select.ForExpr;
-import com.lyhux.sqlbuilder.grammar.select.LimitExpr;
-import com.lyhux.sqlbuilder.grammar.select.OrderByExpr;
-import com.lyhux.sqlbuilder.grammar.select.OrderByItem;
 import org.junit.jupiter.api.Test;
 
 public class OrderByLimitForTest extends MysqlGrammarTest {

@@ -1,6 +1,5 @@
 package test.java;
 
-import com.lyhux.sqlbuilder.grammar.ExprValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.*;
-import java.util.TimeZone;
 
 
 public class ConnectionTest {

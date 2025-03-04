@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 public class InsertTest extends MysqlGrammarTest {
     @Test
     public void testValueExpr() {
-        var val = new ValueExpr<>(new RawStr("23"));
-        var val1 = new ValueExpr<>(new RawStr("?"), ExprValue.of(23));
+        var val = new BindingValue<>(new RawStr("23"));
+        var val1 = new BindingValue<>(new RawStr("?"), TypeValue.of(23));
 
         System.out.printf("value: %s, val1: %s\n", val, val1);
     }
@@ -16,8 +16,8 @@ public class InsertTest extends MysqlGrammarTest {
     public void testValueListExpr() {
         var lst = new ValueGroupExpr();
 
-        var val = new ValueExpr<>(new EscapedStr("23"));
-        var val1 = new ValueExpr<>(new RawStr("?"), ExprValue.of(23));
+        var val = new BindingValue<>(new EscapedStr("23"));
+        var val1 = new BindingValue<>(new RawStr("?"), TypeValue.of(23));
 
         lst.add(val);
         lst.add(val1);

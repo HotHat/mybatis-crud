@@ -1,5 +1,5 @@
 package com.lyhux.sqlbuilder.grammar;
 
 public sealed interface Stmt
-    permits InsertStmt, SelectStmt{
+        permits InsertStmt, SelectStmt, UpdateStmt {
 }

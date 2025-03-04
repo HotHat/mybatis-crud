@@ -50,7 +50,7 @@ public class MysqlGrammar {
 
     public ExprResult compile(WhereClauseExpr expr) {
         var sb = new StringBuilder();
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
 
         switch (expr)
         {
@@ -77,7 +77,7 @@ public class MysqlGrammar {
                     count++;
 
                     var result = compile(condition);
-                    sb.append(result.sql());
+                    sb.append(result.statement());
                     bindings.addAll(result.bindings());
                 }
 
@@ -92,7 +92,7 @@ public class MysqlGrammar {
                 // operator
                 sb.append(" ").append(b.getOperator()).append(" ");
 
-                if (b.isBraceValue()) {
+                if (b.isShowBrace()) {
                     sb.append("(");
                 }
                 // value
@@ -100,16 +100,16 @@ public class MysqlGrammar {
                 // is expr
                 if (value.isExpr()) {
                     sb.append(compile(value.expr()));
-                    bindings.addAll(value.binding());
+                    bindings.addAll(value.bindings());
                 }
                 // is select stmt
                 else {
                     var result = compile(value.stmt());
-                    sb.append(result.sql());
+                    sb.append(result.statement());
                     bindings.addAll(result.bindings());
                 }
 
-                if (b.isBraceValue()) {
+                if (b.isShowBrace()) {
                     sb.append(")");
                 }
 
@@ -129,6 +129,19 @@ public class MysqlGrammar {
             }
         }
     }
+
+    public String compile(ExprStr expr, boolean quoteEscape) {
+        switch (expr)
+        {
+            case RawStr s -> {
+                return s.getValue();
+            }
+            case EscapedStr es -> {
+                return "'" + es.getValue() + "'";
+            }
+        }
+    }
+
 
     public String compile(SelectExpr expr) {
         var sb = new StringBuilder();
@@ -156,7 +169,7 @@ public class MysqlGrammar {
 
         var refs = expr.getTableRefs();
 
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
         if (refs.size() > 1) {
             sb.append("(");
         }
@@ -164,7 +177,7 @@ public class MysqlGrammar {
         int count = 0;
         for (var exp : refs) {
             var result = compile(exp);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
             if (++count < refs.size()) {
                 sb.append(", ");
@@ -185,13 +198,13 @@ public class MysqlGrammar {
         var joined = expr.getJoined();
 
         var result = compile(factor);
-        sb.append(result.sql());
+        sb.append(result.statement());
 
         var bindings = new ArrayList<>(result.bindings());
 
         for (var exp : joined) {
             result = compile(exp);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
         }
 
@@ -218,8 +231,8 @@ public class MysqlGrammar {
         var alias = expr.getAlias();
 
         var result = compile(subTable);
-        sb.append("(").append(result.sql()).append(")");
-        var r = new ArrayList<ExprValue<?>>(result.bindings());
+        sb.append("(").append(result.statement()).append(")");
+        var r = new ArrayList<TypeValue<?>>(result.bindings());
 
         if (!alias.isBlank()) {
             sb.append(" AS ").append(alias);
@@ -248,13 +261,13 @@ public class MysqlGrammar {
         sb.append(" ").append(joined).append(" JOIN ");
 
         var result = compile(factor);
-        sb.append(result.sql());
+        sb.append(result.statement());
         var r = new ArrayList<>(result.bindings());
 
         sb.append(" ON ");
 
         result = compile(condition);
-        sb.append(result.sql());
+        sb.append(result.statement());
         r.addAll(result.bindings());
 
         return new ExprResult(sb.toString(), r);
@@ -275,13 +288,13 @@ public class MysqlGrammar {
                 .append(compile(selectExpr));
 
         ExprResult result;
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
 
         // from
         if (!tableRefs.isEmpty()) {
             sb.append(" FROM ");
             result = compile(tableRefs);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
         }
 
@@ -289,7 +302,7 @@ public class MysqlGrammar {
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
             result = compile(whereExpr);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
         }
 
@@ -297,7 +310,7 @@ public class MysqlGrammar {
         if (groupByExpr != null) {
             sb.append(" GROUP BY ");
             result = compile(groupByExpr);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
         }
 
@@ -328,11 +341,11 @@ public class MysqlGrammar {
             }
         }
 
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
         if (!having.isEmpty()) {
             sb.append(" HAVING ");
             var result = compile(having.getExpr());
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
         }
 
@@ -390,17 +403,14 @@ public class MysqlGrammar {
 
     public ExprResult compile(ValueGroupExpr expr) {
         var sb = new StringBuilder();
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
         var columns = expr.getValueExpr();
         int count = 0;
         for (var exp : columns) {
             var column = exp.expr();
-            sb.append(switch (column) {
-                case RawStr rs -> column.getValue();
-                case EscapedStr es -> "'" + column.getValue() + "'";
-            });
-            if (exp.binding() != null) {
-                bindings.add(exp.binding());
+            sb.append(compile(column, true));
+            if (exp.bindings() != null) {
+                bindings.addAll(exp.bindings());
             }
 
             if (++count < columns.size()) { sb.append(", "); }
@@ -425,9 +435,35 @@ public class MysqlGrammar {
         return sb.toString();
     }
 
+    public ExprResult compile(com.lyhux.sqlbuilder.grammar.update.AssignListExpr expr) {
+        var sb = new StringBuilder();
+        var bindings = new ArrayList<TypeValue<?>>();
+
+        var assigns = expr.getAssignExpr();
+        int count = 0;
+        for (var exp : assigns) {
+            sb.append(compile(exp.column()));
+            sb.append("=");
+
+            var value = exp.value();
+            if (value.isExpr()) {
+                sb.append(compile(value.expr(), true));
+                bindings.addAll(value.bindings());
+            } else  {
+                var result = compile(value.stmt());
+                sb.append(result.statement());
+                bindings.addAll(result.bindings());
+            }
+
+            if (++count < assigns.size()) { sb.append(", "); }
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
+
     public ExprResult compile(InsertStmt stmt) {
         var sb = new StringBuilder();
-        var bindings = new ArrayList<ExprValue<?>>();
+        var bindings = new ArrayList<TypeValue<?>>();
 
         var tableName = stmt.getTableName();
         var columns = stmt.getColumns();
@@ -446,7 +482,7 @@ public class MysqlGrammar {
         for (var val : valueGroup) {
             sb.append("(");
             var result = compile(val);
-            sb.append(result.sql());
+            sb.append(result.statement());
             bindings.addAll(result.bindings());
             sb.append(")");
 
@@ -456,6 +492,49 @@ public class MysqlGrammar {
         if (!assigns.isEmpty()) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
             sb.append(compile(assigns));
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
+
+    public ExprResult compile(UpdateStmt stmt) {
+        var sb = new StringBuilder();
+
+        var tableRef = stmt.getTableRef();
+        var assigns = stmt.getAssignments();
+        var whereExpr = stmt.getWhereExpr();
+        var orderBy = stmt.getOrderBy();
+        var limit = stmt.getLimit();
+
+        sb.append("UPDATE ");
+        var result = compile(tableRef);
+        sb.append(result.statement());
+        var bindings = new ArrayList<TypeValue<?>>(result.bindings());
+
+        // assignment
+        if (!assigns.isEmpty()) {
+            sb.append(" SET ");
+            result = compile(assigns);
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
+        }
+
+        // where
+        if (!whereExpr.isEmpty()) {
+            sb.append(" WHERE ");
+            result = compile(whereExpr);
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
+        }
+
+        if (!orderBy.isEmpty()) {
+            sb.append(" ORDER BY ");
+            sb.append(compile(orderBy));
+        }
+
+        if (limit != null) {
+            sb.append(" LIMIT ");
+            sb.append(compile(limit));
         }
 
         return new ExprResult(sb.toString(), bindings);

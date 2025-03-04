@@ -1,6 +1,11 @@
 package com.lyhux.sqlbuilder.grammar;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.JDBCType;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,20 +34,86 @@ public final class WhereExpr implements WhereClauseExpr {
         showBraces = conditions.size() > 1 && !isRoot();
     }
 
+    // where column = value group
     public WhereExpr where(String column, String value) {
-        return where(column, "=", value, JDBCType.VARCHAR);
+        return where(column, "=", TypeValue.of(JDBCType.VARCHAR, value));
     }
 
     public WhereExpr where(String column, Integer value) {
-        return where(column, "=", value, JDBCType.INTEGER);
+        return where(column, "=", TypeValue.of(JDBCType.INTEGER, value));
+    }
+
+    public WhereExpr where(String column, Long value) {
+        return where(column, "=", TypeValue.of(JDBCType.BIGINT, value));
+    }
+
+    public WhereExpr where(String column, Float value) {
+        return where(column, "=", TypeValue.of(JDBCType.FLOAT, value));
+    }
+
+    public WhereExpr where(String column, Double value) {
+        return where(column, "=", TypeValue.of(JDBCType.DOUBLE, value));
+    }
+
+    public WhereExpr where(String column, Date value) {
+        return where(column, "=", TypeValue.of(JDBCType.DATE, value));
+    }
+
+    public WhereExpr where(String column, Time value) {
+        return where(column, "=", TypeValue.of(JDBCType.TIME, value));
+    }
+
+    public WhereExpr where(String column, Timestamp value) {
+        return where(column, "=", TypeValue.of(JDBCType.TIMESTAMP, value));
+    }
+
+    public WhereExpr where(String column, LocalDateTime value) {
+        return where(column, "=", TypeValue.of(JDBCType.TIMESTAMP, value));
+    }
+
+    public WhereExpr where(String column, BigDecimal value) {
+        return where(column, "=", TypeValue.of(JDBCType.DECIMAL, value));
+    }
+
+    // where column operator value group
+    public WhereExpr where(String column, String operator, String value) {
+        return where(column, operator, TypeValue.of(value));
     }
 
     public WhereExpr where(String column, String operator, Integer value) {
-        return where(column, operator, value, JDBCType.INTEGER);
+        return where(column, operator, TypeValue.of(value));
     }
 
-    public WhereExpr where(String column, String operator, String value) {
-        return where(column, operator, value, JDBCType.VARCHAR);
+    public WhereExpr where(String column, String operator, Long value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, Float value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, Double value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, Date value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, Time value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, Timestamp value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, LocalDateTime value) {
+        return where(column, operator, TypeValue.of(value));
+    }
+
+    public WhereExpr where(String column, String operator, BigDecimal value) {
+        return where(column, operator, TypeValue.of(value));
     }
 
     public WhereExpr whereColumn(String column, String value) {
@@ -50,17 +121,150 @@ public final class WhereExpr implements WhereClauseExpr {
         expr.add(new BinaryExpr(
                 new EscapedStr(column),
                 "=",
-                new BindingValue<>(new EscapedStr(value), new ArrayList<TypeValue<String>>())
+                new BindingValue<>(new EscapedStr(value))
         ), "AND");
 
-        conditions.add(expr);
+        add(expr, "AND");
+        return this;
+    }
+
+    public WhereExpr whereNull(String column) {
+        return whereNull(column, true, true);
+    }
+
+    public WhereExpr whereNotNull(String column) {
+        return whereNull(column, false, true);
+    }
+
+    public WhereExpr orWhereNull(String column) {
+        return whereNull(column, true, false);
+    }
+
+    public WhereExpr orWhereNotNull(String column) {
+        return whereNull(column, false, false);
+    }
+
+    private WhereExpr whereNull(String column, boolean isNull, boolean isAnd) {
+        var expr = new WhereExpr();
+        expr.add(new BinaryExpr(
+            new EscapedStr(column),
+            isNull ? "IS NULL" : "IS NOT NULL",
+            new BindingValue<>(new RawStr(""), List.of())
+        ), isAnd ? "AND" : "OR");
+
+        add(expr, isAnd ? "AND" : "OR");
         return this;
     }
 
     public WhereExpr whereIn(String column, List<String> value) {
+        return baseWhere(column, "IN", value, JDBCType.VARCHAR, true, false);
+    }
+
+    public WhereExpr whereIn(String column, String... value) {
+        return baseWhere(column, "IN", value, JDBCType.VARCHAR, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Integer... value) {
         return baseWhere(column, "IN", value, JDBCType.INTEGER, true, false);
     }
 
+    public WhereExpr whereIn(String column, Long... value) {
+        return baseWhere(column, "IN", value, JDBCType.BIGINT, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Float... value) {
+        return baseWhere(column, "IN", value, JDBCType.FLOAT, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Double... value) {
+        return baseWhere(column, "IN", value, JDBCType.DOUBLE, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Date... value) {
+        return baseWhere(column, "IN", value, JDBCType.DATE, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Time... value) {
+        return baseWhere(column, "IN", value, JDBCType.TIME, true, false);
+    }
+
+    public WhereExpr whereIn(String column, Timestamp... value) {
+        return baseWhere(column, "IN", value, JDBCType.TIMESTAMP, true, false);
+    }
+
+    public WhereExpr whereIn(String column, LocalDateTime... values) {
+        return whereIn(true, column, values);
+    }
+
+    public WhereExpr whereIn(boolean isAnd, String column, LocalDateTime... values) {
+        var expr = new WhereExpr(false);
+        var bindings = new ArrayList<TypeValue<Timestamp>>();
+        int count = 0;
+        var mark = new StringBuilder();
+        mark.append("(");
+        for (var t : values) {
+            bindings.add(TypeValue.of(t));
+            mark.append("?");
+            if (++count < values.length) {
+                mark.append(", ");
+            }
+        }
+        mark.append(")");
+        expr.add(new BinaryExpr(
+            new EscapedStr(column),
+            "IN",
+            new BindingValue<>(new RawStr(mark.toString()), bindings)
+        ), isAnd ? "AND" : "OR");
+
+        add(expr, isAnd ? "AND" : "OR");
+
+        return this;
+    }
+
+    public WhereExpr whereIn(String column, BigDecimal... value) {
+        return baseWhere(column, "IN", value, JDBCType.DECIMAL, false, false);
+    }
+
+    // orWhereIn group
+    public WhereExpr orWhereIn(String column, String... value) {
+        return baseWhere(column, "IN", value, JDBCType.VARCHAR, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Integer... value) {
+        return baseWhere(column, "IN", value, JDBCType.INTEGER, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Long... value) {
+        return baseWhere(column, "IN", value, JDBCType.BIGINT, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Float... value) {
+        return baseWhere(column, "IN", value, JDBCType.FLOAT, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Double... value) {
+        return baseWhere(column, "IN", value, JDBCType.DOUBLE, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Date... value) {
+        return baseWhere(column, "IN", value, JDBCType.DATE, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Time... value) {
+        return baseWhere(column, "IN", value, JDBCType.TIME, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Timestamp... value) {
+        return baseWhere(column, "IN", value, JDBCType.TIMESTAMP, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, LocalDateTime... values) {
+        return whereIn(false, column, values);
+    }
+
+    public WhereExpr orWhereIn(String column, BigDecimal... value) {
+        return baseWhere(column, "IN", value, JDBCType.DECIMAL, false, false);
+    }
 
     public WhereExpr on(String column, String operator, String value) {
         var expr = new WhereExpr();
@@ -70,7 +274,7 @@ public final class WhereExpr implements WhereClauseExpr {
                 new BindingValue<>(new EscapedStr(value), new ArrayList<TypeValue<String>>())
         ), "ON");
 
-        conditions.add(expr);
+        add(expr, "ON");
         return this;
     }
 
@@ -86,7 +290,6 @@ public final class WhereExpr implements WhereClauseExpr {
         return this;
     }
 
-
     public WhereExpr orWhere(WhereNest query) {
         var expr = new WhereExpr();
         add(expr, "OR");
@@ -94,33 +297,75 @@ public final class WhereExpr implements WhereClauseExpr {
         return this;
     }
 
-    public <T> WhereExpr where(String column, String operator, T value, JDBCType type) {
-        return baseWhere(column, operator, value, type, true, false);
+    public <T> WhereExpr where(String column, String operator, TypeValue<T> value) {
+        return baseWhere(column, operator, value, true, false);
     }
 
-    public <T> WhereExpr whereRaw(String column, String operator, T value, JDBCType type) {
-        return baseWhere(column, operator, value, type, true, true);
+    public <T> WhereExpr whereRaw(String column, String operator, TypeValue<T> value) {
+        return baseWhere(column, operator, value, true, true);
     }
 
-    public <T> WhereExpr orWhere(String column, String operator, T value, JDBCType type) {
-        return baseWhere(column, operator, value, type, false, false);
+    // orWhere group
+    public WhereExpr orWhere(String column, String operator, String value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
     }
 
-    public <T> WhereExpr orWhereRaw(String column, String operator, T value, JDBCType type) {
-        return baseWhere(column, operator, value, type, false, true);
+    public WhereExpr orWhere(String column, String operator, Integer value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
     }
 
-    public <T> WhereExpr baseWhere(String column, String operator, T value, JDBCType type, boolean isAnd, boolean isRaw) {
+    public WhereExpr orWhere(String column, String operator, Long value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, Float value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, Double value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, Date value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, Time value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, Timestamp value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, LocalDateTime value) {
+        return baseWhere(column, operator, TypeValue.of(value), false, false);
+    }
+
+    public WhereExpr orWhere(String column, String operator, BigDecimal value) {
+        return baseWhere(column, operator, TypeValue.of(JDBCType.DECIMAL, value), false, false);
+    }
+
+    // orWhere just one type with raw string value
+    public WhereExpr orWhereRaw(String column, String operator, String value) {
+        return baseWhere(column, operator, TypeValue.of(JDBCType.VARCHAR, value), false, true);
+    }
+
+    public <T> WhereExpr baseWhere(String column, String operator, TypeValue<T> value, boolean isAnd, boolean isRaw) {
         var expr = new WhereExpr();
         expr.add(new BinaryExpr(
                 isRaw ? new RawStr(column) : new EscapedStr(column),
                 operator,
-                new BindingValue<>(new RawStr("?"), List.of(new TypeValue<>(type, value)))
+                new BindingValue<>(new RawStr("?"), List.of(value))
         ), isAnd ? "AND" : "OR");
 
-        conditions.add(expr);
+        add(expr, isAnd ? "AND" : "OR");
 
         return this;
+    }
+
+    public <T> WhereExpr baseWhere(String column, String operator, T[] params, JDBCType type, boolean isAnd, boolean isRaw) {
+        return baseWhere(column, operator, List.of(params), type, isAnd, isRaw);
     }
 
     public <T> WhereExpr baseWhere(String column, String operator, List<T> params, JDBCType type, boolean isAnd, boolean isRaw) {
@@ -137,13 +382,13 @@ public final class WhereExpr implements WhereClauseExpr {
             }
         }
         mark.append(")");
-       expr.add(new BinaryExpr(
-                isRaw ? new RawStr(column) : new EscapedStr(column),
-                operator,
-                new BindingValue<>(new RawStr(mark.toString()), values)
+        expr.add(new BinaryExpr(
+            isRaw ? new RawStr(column) : new EscapedStr(column),
+            operator,
+            new BindingValue<>(new RawStr(mark.toString()), values)
         ), isAnd ? "AND" : "OR");
 
-        conditions.add(expr);
+        add(expr, isAnd ? "AND" : "OR");
 
         return this;
     }
@@ -159,7 +404,7 @@ public final class WhereExpr implements WhereClauseExpr {
                 true
         ), "AND");
 
-        conditions.add(expr);
+        add(expr, "AND");
 
         return this;
     }

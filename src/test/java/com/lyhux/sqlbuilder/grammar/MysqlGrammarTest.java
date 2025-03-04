@@ -128,4 +128,11 @@ public class MysqlGrammarTest {
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
+
+    public ExprResult print(DeleteStmt stmt) {
+        var result = grammar.compile(stmt);
+        System.out.println(result.statement());
+        System.out.println(result.bindings());
+        return result;
+    }
 }

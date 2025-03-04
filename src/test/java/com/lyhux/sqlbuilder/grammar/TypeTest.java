@@ -28,4 +28,32 @@ public class TypeTest {
         }
 
     }
+
+    private void print(String... s) {
+        printT(s);
+    }
+
+    private void print(Integer... s) {
+        printT(s);
+    }
+
+    public <T> void printT(T[] list) {
+        for (var t : list) {
+            System.out.println(t);;
+        }
+    }
+
+    public <T> void printT(List<T> list) {
+        for (var t : list) {
+            System.out.println(t);;
+        }
+    }
+
+    @Test
+    public void testPrint() {
+        printT(List.of("a", "b", "c"));
+        print(new String[]{"a2", "b1", "c1"});
+        print(new Integer[]{1, 2, 3});
+    }
+
 }

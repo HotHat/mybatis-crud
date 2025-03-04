@@ -18,6 +18,8 @@ public final class GroupByExpr implements Expr {
         having = new HavingExpr();
     }
 
+    public boolean isEmpty() { return columns.isEmpty(); }
+
     public List<ExprStr> getColumns() { return columns; }
 
     public HavingExpr getHaving() { return having; }

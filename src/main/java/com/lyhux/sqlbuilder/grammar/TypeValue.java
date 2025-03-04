@@ -1,5 +1,6 @@
 package com.lyhux.sqlbuilder.grammar;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.Time;
@@ -11,8 +12,12 @@ import java.time.ZonedDateTime;
 
 public record TypeValue<T>(JDBCType type, T value) {
 
+    public static TypeValue<String> of() {
+        return new TypeValue<>(JDBCType.NULL, null);
+    }
+
     public static TypeValue<String> of(String val) {
-        return new TypeValue<String>(JDBCType.VARCHAR, val);
+        return new TypeValue<>(JDBCType.VARCHAR, val);
     }
 
     public static TypeValue<Integer> of(Integer val) {
@@ -32,11 +37,11 @@ public record TypeValue<T>(JDBCType type, T value) {
     }
 
     public static TypeValue<Time> of(Time time) {
-        return new TypeValue<Time>(JDBCType.TIME, time);
+        return new TypeValue<>(JDBCType.TIME, time);
     }
 
     public static TypeValue<Date> of(Date date) {
-        return new TypeValue<Date>(JDBCType.DATE, date);
+        return new TypeValue<>(JDBCType.DATE, date);
     }
 
     public static TypeValue<Timestamp> of(Timestamp timestamp) {
@@ -57,14 +62,22 @@ public record TypeValue<T>(JDBCType type, T value) {
         return new TypeValue<>(JDBCType.TIMESTAMP, Timestamp.from(instant));
     }
 
+    public static TypeValue<BigDecimal> of(BigDecimal value) {
+        return new TypeValue<>(JDBCType.DECIMAL, value);
+    }
+
+    public static <T> TypeValue<T> of(JDBCType type, T value) {
+        return new TypeValue<>(type, value);
+    }
+
     @Override
     public String toString() {
         return this.getClass().getSimpleName() +
                 "[type=" + type.toString()
                 + ", value="
-                + value.toString()
+                + (value != null ? value.toString() : "null")
                 + ", valueType="
-                + value.getClass().getSimpleName()
+                + (value != null ? value.getClass().getSimpleName() : "null")
                 + "]";
     }
 }

@@ -90,7 +90,7 @@ public class MysqlGrammar {
                 // column
                 sb.append(compile(b.getColumn()));
                 // operator
-                sb.append(" ").append(b.getOperator()).append(" ");
+                sb.append(" ").append(b.getOperator());
 
                 if (b.isShowBrace()) {
                     sb.append("(");
@@ -99,8 +99,14 @@ public class MysqlGrammar {
                 var value = b.getValue();
                 // is expr
                 if (value.isExpr()) {
-                    sb.append(compile(value.expr()));
-                    bindings.addAll(value.bindings());
+                    var statement = compile(value.expr());
+                    if (!statement.isBlank()) {
+                        sb.append(" ").append(statement);
+                    }
+
+                    if (!value.bindings().isEmpty()) {
+                        bindings.addAll(value.bindings());
+                    }
                 }
                 // is select stmt
                 else {
@@ -307,7 +313,7 @@ public class MysqlGrammar {
         }
 
         // group by having
-        if (groupByExpr != null) {
+        if (!groupByExpr.isEmpty()) {
             sb.append(" GROUP BY ");
             result = compile(groupByExpr);
             sb.append(result.statement());
@@ -315,7 +321,7 @@ public class MysqlGrammar {
         }
 
         // order by
-        if (orderByExpr != null) {
+        if (!orderByExpr.isEmpty()) {
             sb.append(" ORDER BY ").append(compile(orderByExpr));
         }
 
@@ -540,4 +546,37 @@ public class MysqlGrammar {
         return new ExprResult(sb.toString(), bindings);
     }
 
+    public ExprResult compile(DeleteStmt stmt) {
+        var sb = new StringBuilder();
+
+        var tableRef = stmt.getTableRef();
+        var whereExpr = stmt.getWhereExpr();
+        var orderBy = stmt.getOrderBy();
+        var limit = stmt.getLimit();
+
+        sb.append("DELETE FROM ");
+        var result = compile(tableRef);
+        sb.append(result.statement());
+        var bindings = new ArrayList<TypeValue<?>>(result.bindings());
+
+        // where
+        if (!whereExpr.isEmpty()) {
+            sb.append(" WHERE ");
+            result = compile(whereExpr);
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
+        }
+
+        if (!orderBy.isEmpty()) {
+            sb.append(" ORDER BY ");
+            sb.append(compile(orderBy));
+        }
+
+        if (limit != null) {
+            sb.append(" LIMIT ");
+            sb.append(compile(limit));
+        }
+
+        return new ExprResult(sb.toString(), bindings);
+    }
 }

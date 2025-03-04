@@ -3,20 +3,22 @@ package com.lyhux.sqlbuilder.grammar;
 import com.lyhux.sqlbuilder.grammar.update.AssignListExpr;
 import com.lyhux.sqlbuilder.grammar.update.SetNest;
 
-public final class UpdateStmt implements Stmt{
+public final class DeleteStmt implements Stmt {
     TableRefExpr tableRef;
-    AssignListExpr assignments;
     WhereExpr whereExpr;
     OrderByExpr orderBy;
     LimitExpr limit;
 
-    public UpdateStmt(String table) {
+    public DeleteStmt(String table) {
+        this(table, "");
+    }
+
+    public DeleteStmt(String table, String alias) {
         this.tableRef = new TableRefExpr(
-                        new TableNameExpr(
-                                new EscapedStr(table),
-                                new EscapedStr(""))
+                new TableNameExpr(
+                        new EscapedStr(table),
+                        new EscapedStr(alias))
         );
-        this.assignments = new AssignListExpr();
         this.whereExpr = new WhereExpr();
         this.orderBy = new OrderByExpr();
         this.limit = null;
@@ -24,21 +26,15 @@ public final class UpdateStmt implements Stmt{
 
     public TableRefExpr getTableRef() { return tableRef; }
     public WhereExpr getWhereExpr() { return whereExpr; }
-    public AssignListExpr getAssignments() { return assignments; }
     public OrderByExpr getOrderBy() { return orderBy; }
     public LimitExpr getLimit() { return limit; }
 
-
-    public UpdateStmt where(WhereNest nest) {
+    public DeleteStmt where(WhereNest nest) {
         nest.where(whereExpr);
         return this;
     }
-    public UpdateStmt set(SetNest nest) {
-        nest.updateSet(assignments);
-        return this;
-    }
 
-    public UpdateStmt orderBy(String columns, String order) {
+    public DeleteStmt orderBy(String columns, String order) {
         orderBy.add(new OrderByItem(new EscapedStr(columns), order));
         return this;
     }
@@ -50,5 +46,4 @@ public final class UpdateStmt implements Stmt{
     public void limit(int count, int offset) {
         limit = new LimitExpr(count, offset);
     }
-
 }

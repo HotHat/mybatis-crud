@@ -18,8 +18,8 @@ public final class SelectStmt implements Stmt {
         tableRefsExpr = new TableRefsExpr();
         whereExpr = new WhereExpr();
 
-        groupByExpr = null;
-        orderByExpr = null;
+        groupByExpr = new GroupByExpr();
+        orderByExpr = new OrderByExpr();
         limitExpr = null;
     }
 

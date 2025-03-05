@@ -11,12 +11,14 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class ConnectionTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "123456";
+    static final String PASSWORD = "";
 
     private Connection conn;
 
@@ -180,6 +182,34 @@ public class ConnectionTest {
     }
 
     @Test
+    public void testBuilderInert2() throws SQLException {
+        var builder = new Builder(conn, new MysqlGrammar());
+        var primaryKey = builder.insert((insert) -> {
+            insert
+                .table("type_test")
+                .columns("String", "Long", "Float", "Double", "Date", "Time", "LocalDateTime", "BigDecimal")
+                .values((group -> {
+                    group
+                        .add("String type")
+                        .add(123456L)
+                        .add(1.00F)
+                        .add(5.00D)
+                        .add(Date.valueOf(LocalDate.now()))
+                        .add(Time.valueOf(LocalTime.now()))
+                        .add(LocalDateTime.now())
+                        .add(new BigDecimal("19823.88"))
+                        ;
+                        // .add(Timestamp.from(Instant.now()))
+                        // .addNull();
+
+                }));
+        });
+
+        System.out.println("Primary key: " + primaryKey);
+    }
+
+
+    @Test
     public void testBuilderUpdate() throws SQLException {
         var builder = new Builder(conn, new MysqlGrammar());
         var primaryKey = builder.update((update) -> {
@@ -198,5 +228,79 @@ public class ConnectionTest {
         });
 
         System.out.println("Primary key: " + primaryKey);
+    }
+
+    @Test
+    public void testFetchData() throws Exception {
+
+        PreparedStatement stm =  conn.prepareStatement("select * from type_test where id=1 limit 1");
+        // stm.setLong(1, 1212);
+        ResultSet rs = stm.executeQuery();
+        Map<String, Object> rowData = new HashMap<>();
+
+        while (rs.next()) {
+            var meta =rs.getMetaData();
+            int numberOfColumns = meta.getColumnCount();
+            for (int i = 1; i <= numberOfColumns; i++) {
+                System.out.printf("%s mysql_type:%s, java_type:%s\n", meta.getColumnName(i), meta.getColumnTypeName(i), meta.getColumnClassName(i));
+                var type = meta.getColumnType(i);
+                var jdbcType = JDBCType.valueOf(type);
+                System.out.printf("type: %s, jdbc type: %s\n", type, jdbcType);
+                /*
+                switch (jdbcType) {
+                    case JDBCType.VARCHAR:
+                        System.out.println(rs.getString(i));
+                        rowData.put(meta.getColumnName(i), rs.getString(i));
+                        break;
+                    case JDBCType.INTEGER:
+                        System.out.println(rs.getInt(i));
+                        rowData.put(meta.getColumnName(i), rs.getInt(i));
+                        break;
+
+                    case JDBCType.BIGINT:
+                        System.out.println(rs.getLong(i));
+                        rowData.put(meta.getColumnName(i), rs.getLong(i));
+                        break;
+
+                    case JDBCType.FLOAT:
+                    case JDBCType.REAL:
+                        System.out.println(rs.getFloat(i));
+                        rowData.put(meta.getColumnName(i), rs.getFloat(i));
+                        break;
+
+                    case JDBCType.DOUBLE:
+                        System.out.println(rs.getDouble(i));
+                        rowData.put(meta.getColumnName(i), rs.getDouble(i));
+                        break;
+
+                    case JDBCType.DATE:
+                        System.out.println(rs.getDate(i));
+                        rowData.put(meta.getColumnName(i), rs.getDate(i));
+                        break;
+
+                    case JDBCType.TIME:
+                        System.out.println(rs.getTime(i));
+                        rowData.put(meta.getColumnName(i), rs.getTime(i));
+                        break;
+
+                    case JDBCType.TIMESTAMP:
+                        System.out.println(rs.getObject(i));
+                        rowData.put(meta.getColumnName(i), rs.getObject(i));
+                        break;
+                    case JDBCType.DECIMAL:
+                        System.out.println(rs.getBigDecimal(i));
+                        rowData.put(meta.getColumnName(i), rs.getBigDecimal(i));
+                        break;
+                }
+                 */
+                rowData.put(meta.getColumnName(i), rs.getObject(i));
+            }
+
+
+            System.out.printf("rowData: %s\n", rowData);
+            TypeTestBean typeTestBean = BeanMapUtil.mapToBean(rowData, TypeTestBean.class);
+
+            System.out.printf("bean: %s\n", typeTestBean);
+        }
     }
 }

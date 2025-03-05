@@ -2,6 +2,7 @@ package com.lyhux.sqlbuilder.grammar.insert;
 
 import com.lyhux.sqlbuilder.grammar.*;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -72,6 +73,11 @@ public class ValueGroupExpr {
     }
 
     public ValueGroupExpr add(LocalDateTime value) {
+        this.valueExpr.add(new BindingValue<>(new RawStr("?"), TypeValue.of(value)));
+        return this;
+    }
+
+    public ValueGroupExpr add(BigDecimal value) {
         this.valueExpr.add(new BindingValue<>(new RawStr("?"), TypeValue.of(value)));
         return this;
     }

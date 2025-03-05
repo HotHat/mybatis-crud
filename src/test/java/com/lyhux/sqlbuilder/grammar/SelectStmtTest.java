@@ -49,6 +49,49 @@ public class SelectStmtTest extends MysqlGrammarTest {
     }
 
     @Test
+    public void testJoin2() {
+
+        var selector = new SelectStmt();
+
+        selector.select("*")
+               .from("users")
+               .join("contacts", (join) -> {
+                   join.on("users.id", "=", "contacts.user_id")
+                       .on("users.id", "=", "customs.user_id")
+                       .where("contacts.user_id", ">", 5);
+               })
+        ;
+
+        print(selector);
+    }
+
+    @Test
+    public void testJoinSub() {
+        var latestPosts = new SelectStmt().from("posts")
+                                          .select("user_id")
+                                          .where((query) -> {
+                                              query.where("is_published", 1);
+                                          })
+                                          .groupBy("user_id");
+
+        var selector = new SelectStmt();
+
+        selector.from("users")
+                .joinSub(latestPosts, "latest_posts", (join) -> {
+                    join.on("users.id", "=", "latest_posts.user_id");
+                })
+                .joinSub(latestPosts, "latest_posts", (join) -> {
+                    join.on("users.id", "=", "latest_posts.user_id");
+                })
+            .where((query) -> {
+                query.where("users.id", ">", 5);
+            })
+        ;
+
+        print(selector);
+    }
+
+    @Test
     public void testLeftJoin() {
         var builder = new SelectStmt();
 

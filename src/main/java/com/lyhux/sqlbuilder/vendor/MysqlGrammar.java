@@ -58,13 +58,24 @@ public class MysqlGrammar implements Grammar {
                 // top level
                 var conditions = w.getConditions();
 
-                int count = 0;
                 boolean showBraces = w.isShowBraces();
 
-                if (showBraces) {
+                // in group include inverse logic connect
+                boolean includeInverse = false;
+                String currentBool = w.getBool();
+                for (var condition : conditions) {
+                    var bool = switch (condition) {
+                        case WhereExpr w1 -> w1.getBool();
+                        case BinaryExpr b1 -> currentBool;
+                    };
+                    if (!bool.equals(currentBool)) { includeInverse = true; break; }
+                }
+
+                if (showBraces && includeInverse) {
                     sb.append("(");
                 }
 
+                int count = 0;
                 for (var condition : conditions) {
                     var bool = switch (condition) {
                         case WhereExpr w1 -> w1.getBool();
@@ -81,7 +92,7 @@ public class MysqlGrammar implements Grammar {
                     bindings.addAll(result.bindings());
                 }
 
-                if (showBraces) {
+                if (showBraces && includeInverse) {
                     sb.append(")");
                 }
                 return new ExprResult(sb.toString(), bindings);

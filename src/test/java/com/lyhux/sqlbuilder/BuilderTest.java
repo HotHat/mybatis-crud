@@ -16,14 +16,16 @@ public class BuilderTest {
             .select("id", "name", "age")
             .where((query) -> {
                 query.where("id", 1)
-                     .whereIn("name", "haha", "baba");
+                     .whereIn("name", "haha", "baba")
+                     .when(test1, (q) -> {
+                         q.where("id", 3).orWhere("age", 2);
+                     })
+                     .when(test2, (q) -> {
+                         q.where("id", 4).where("age", 1);
+                     })
+                ;
             })
-            .when(test1, (query) -> {
-                query.where("id", 3);
-            })
-            .when(test2, (query) -> {
-                query.where("id", 4);
-            })
+
         ;
 
         var result = builder.compile();
@@ -46,14 +48,16 @@ public class BuilderTest {
                 .select("id", "name", "age")
                 .where((query) -> {
                     query.where("id", 1)
-                         .whereIn("name", "haha", "baba");
+                         .whereIn("name", "haha", "baba")
+                         .when(test1, (q) -> {
+                             q.where("id", 3);
+                         })
+                         .when(test2, (q) -> {
+                             q.where("id", 4);
+                         })
+                    ;
                 })
-                .when(test1, (query) -> {
-                    query.where("id", 3);
-                })
-                .when(test2, (query) -> {
-                    query.where("id", 4);
-                })
+
             ;
         }).compile();
 

@@ -17,6 +17,7 @@ public final class WhereExpr implements WhereClauseExpr {
     List<WhereClauseExpr> conditions = new ArrayList<>();
 
     public WhereExpr() { root = true; }
+    public WhereExpr(String bool) { this.bool = bool; }
     public WhereExpr(boolean root) { this.root = root; showBraces = false; }
     public WhereExpr(boolean root, boolean showBrackets) { this.root = root; this.showBraces = showBrackets; }
 
@@ -27,6 +28,11 @@ public final class WhereExpr implements WhereClauseExpr {
     public List<WhereClauseExpr> getConditions() { return conditions; }
     public boolean isEmpty() { return conditions.isEmpty(); }
 
+    public void add(WhereClauseExpr expr) {
+        conditions.add(expr);
+        showBraces = conditions.size() > 1 && !isRoot();
+    }
+
     public void add(WhereClauseExpr expr, String bool) {
         conditions.add(expr);
         this.bool = bool;
@@ -34,7 +40,8 @@ public final class WhereExpr implements WhereClauseExpr {
         showBraces = conditions.size() > 1 && !isRoot();
     }
 
-    // where column = value group
+
+    // Where column value group
     public WhereExpr where(String column, String value) {
         return where(column, "=", TypeValue.of(JDBCType.VARCHAR, value));
     }
@@ -74,6 +81,48 @@ public final class WhereExpr implements WhereClauseExpr {
     public WhereExpr where(String column, BigDecimal value) {
         return where(column, "=", TypeValue.of(JDBCType.DECIMAL, value));
     }
+
+    // orWhere column = value group
+    public WhereExpr orWhere(String column, String value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.VARCHAR, value));
+    }
+
+    public WhereExpr orWhere(String column, Integer value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.INTEGER, value));
+    }
+
+    public WhereExpr orWhere(String column, Long value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.BIGINT, value));
+    }
+
+    public WhereExpr orWhere(String column, Float value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.FLOAT, value));
+    }
+
+    public WhereExpr orWhere(String column, Double value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.DOUBLE, value));
+    }
+
+    public WhereExpr orWhere(String column, Date value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.DATE, value));
+    }
+
+    public WhereExpr orWhere(String column, Time value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.TIME, value));
+    }
+
+    public WhereExpr orWhere(String column, Timestamp value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.TIMESTAMP, value));
+    }
+
+    public WhereExpr orWhere(String column, LocalDateTime value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.TIMESTAMP, value));
+    }
+
+    public WhereExpr orWhere(String column, BigDecimal value) {
+        return orWhere(column, "=", TypeValue.of(JDBCType.DECIMAL, value));
+    }
+
 
     // where column operator value group
     public WhereExpr where(String column, String operator, String value) {
@@ -272,9 +321,14 @@ public final class WhereExpr implements WhereClauseExpr {
                 new EscapedStr(column),
                 operator,
                 new BindingValue<>(new EscapedStr(value), new ArrayList<TypeValue<String>>())
-        ), "ON");
+        ), "AND");
 
         add(expr, "ON");
+        return this;
+    }
+
+    public WhereExpr on(WhereNest query) {
+        where(query, true, "ON");
         return this;
     }
 
@@ -291,14 +345,18 @@ public final class WhereExpr implements WhereClauseExpr {
     }
 
     public WhereExpr orWhere(WhereNest query) {
-        var expr = new WhereExpr();
-        add(expr, "OR");
+        var expr = new WhereExpr("OR");
+        add(expr);
         query.where(expr);
         return this;
     }
 
     public <T> WhereExpr where(String column, String operator, TypeValue<T> value) {
         return baseWhere(column, operator, value, true, false);
+    }
+
+    public <T> WhereExpr orWhere(String column, String operator, TypeValue<T> value) {
+        return baseWhere(column, operator, value, false, false);
     }
 
     public <T> WhereExpr whereRaw(String column, String operator, TypeValue<T> value) {
@@ -359,7 +417,7 @@ public final class WhereExpr implements WhereClauseExpr {
                 new BindingValue<>(new RawStr("?"), List.of(value))
         ), isAnd ? "AND" : "OR");
 
-        add(expr, isAnd ? "AND" : "OR");
+        add(expr);
 
         return this;
     }
@@ -388,7 +446,7 @@ public final class WhereExpr implements WhereClauseExpr {
             new BindingValue<>(new RawStr(mark.toString()), values)
         ), isAnd ? "AND" : "OR");
 
-        add(expr, isAnd ? "AND" : "OR");
+        add(expr);
 
         return this;
     }
@@ -404,9 +462,22 @@ public final class WhereExpr implements WhereClauseExpr {
                 true
         ), "AND");
 
-        add(expr, "AND");
+        add(expr);
 
         return this;
     }
 
+    public WhereExpr when(boolean test, WhereNest query) {
+        if (test) {
+            where(query, false, "AND");
+        }
+        return this;
+    }
+
+    public WhereExpr orWhen(boolean test, WhereNest query) {
+        if (test) {
+            where(query, false, "OR");
+        }
+        return this;
+    }
 }

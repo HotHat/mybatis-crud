@@ -52,6 +52,60 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
     }
 
     @Test
+    public void testNestWhere1() {
+        var expr = new WhereExpr();
+
+        expr.where("r1", "r1")
+            .orWhere("r2", "r2")
+            .where("r3", "r3")
+            .orWhere("r4", "r4")
+        ;
+
+        var result = grammar.compile(expr);
+        print(result);
+    }
+
+    @Test
+    public void testNestWhere2() {
+        var expr = new WhereExpr();
+
+        expr.where("r1", "r1")
+            .where((query) -> {
+                query.where("n1", "n1")
+                     .orWhere("n2", "n2")
+                 ;
+            })
+            .where((query) -> {
+                query.where("d1", "d1").where("d2", "d2");
+            })
+            .orWhere(query -> {
+                query.where("f1", "f1").orWhere("f2", "f2");
+            })
+            .orWhere(query -> {
+                query.orWhere("p1", "p1").orWhere("p2", "p2");
+            })
+            .where("r3", "r3")
+            .orWhere("r2", "r2")
+        ;
+
+        var result = grammar.compile(expr);
+        print(result);
+    }
+
+    @Test
+    public void testOn() {
+
+        var expr = new WhereExpr();
+        expr.on("user.id", "=", "order.user_id")
+            .on("user.id", "=", "payment.user_id")
+            .on("user.id", "=", "invoice.user_id")
+            ;
+
+        var result = grammar.compile(expr);
+        print(result);
+    }
+
+    @Test
     public void testWhereExprWhereIn() {
         var expr = new WhereExpr();
         expr.where("id", 123).whereIn("id", List.of("id1", "id2")).whereIn("name", List.of("name1", "name2"));

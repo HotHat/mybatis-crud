@@ -80,22 +80,31 @@ public final class SelectStmt implements Stmt {
         return this;
     }
 
-    public SelectStmt when(boolean test, WhereNest query) {
-        if (test) {
-            whereExpr.where(query, true, "AND");
-        }
-        return this;
-    }
 
-    public SelectStmt orWhen(boolean test, WhereNest query) {
-        if (test) {
-            whereExpr.where(query, true, "OR");
-        }
-        return this;
-    }
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "INNER");
+    }
+
+    public SelectStmt join(String table, WhereNest query) {
+        return join(table, query, "INNER");
+    }
+
+    public SelectStmt joinSub(SelectStmt subTable, String alias, WhereNest query) {
+        return joinSub(subTable, alias, query, "INNER");
+    }
+
+    public SelectStmt joinSub(SelectStmt subTable, String tableAlias, WhereNest query, String joinType) {
+        var whereExpr = new WhereExpr();
+        whereExpr.on(query);
+        var joinedExpr = new TableJoinedExpr(joinType, new TableSubExpr(subTable,  tableAlias), whereExpr);
+        assert !tableRefsExpr.isEmpty();
+        var refs = tableRefsExpr.getTableRefs();
+
+        var top = refs.getLast();
+        top.add(joinedExpr);
+
+        return this;
     }
 
     public SelectStmt leftJoin(String table, String leftColumn, String operator, String rightColumn) {
@@ -108,8 +117,22 @@ public final class SelectStmt implements Stmt {
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
         var tableExpr = new TableNameExpr(new EscapedStr(table));
-        var whereExpr = new WhereExpr(false);
+        var whereExpr = new WhereExpr();
         whereExpr.on(leftColumn, operator, rightColumn);
+        var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);
+        assert !tableRefsExpr.isEmpty();
+        var refs = tableRefsExpr.getTableRefs();
+
+        var top = refs.getLast();
+        top.add(joinedExpr);
+
+        return this;
+    }
+
+    public SelectStmt join(String table, WhereNest query, String joinType) {
+        var tableExpr = new TableNameExpr(new EscapedStr(table));
+        var whereExpr = new WhereExpr();
+        whereExpr.on(query);
         var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);
         assert !tableRefsExpr.isEmpty();
         var refs = tableRefsExpr.getTableRefs();

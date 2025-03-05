@@ -56,6 +56,14 @@ public final class SelectStmt implements Stmt {
        return  from(table, "");
     }
 
+    public SelectStmt table(String table) {
+        return  from(table, "");
+    }
+
+    public SelectStmt table(String table, String alias) {
+        return  from(table, alias);
+    }
+
     public SelectStmt from(SelectStmt table, String alias) {
         tableRefsExpr.add(new TableRefExpr(new TableSubExpr(table, alias)));
         return  this;
@@ -79,8 +87,6 @@ public final class SelectStmt implements Stmt {
         whereExpr.where(query, true, "OR");
         return this;
     }
-
-
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "INNER");
@@ -111,8 +117,16 @@ public final class SelectStmt implements Stmt {
         return join(table, leftColumn, operator, rightColumn, "LEFT");
     }
 
+    public SelectStmt leftJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+        return joinSub(subTable, alias, query, "LEFT");
+    }
+
     public SelectStmt rightJoin(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "RIGHT");
+    }
+
+    public SelectStmt rightJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+        return joinSub(subTable, alias, query, "RIGHT");
     }
 
     public SelectStmt join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
@@ -162,11 +176,11 @@ public final class SelectStmt implements Stmt {
     }
 
     // order by
-    public SelectStmt orderBy(String columns, String order) {
+    public SelectStmt orderBy(String column, String order) {
         if (orderByExpr == null) {
             orderByExpr = new OrderByExpr();
         }
-        orderByExpr.add(new OrderByItem(new EscapedStr(columns), order));
+        orderByExpr.add(new OrderByItem(new EscapedStr(column), order));
 
         return this;
     }

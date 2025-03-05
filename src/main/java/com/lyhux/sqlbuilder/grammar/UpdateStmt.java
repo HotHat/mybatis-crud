@@ -15,10 +15,14 @@ public final class UpdateStmt implements Stmt{
     }
 
     public UpdateStmt(String table) {
+        this(table, "");
+    }
+
+    public UpdateStmt(String table, String alias) {
         this.tableRef = new TableRefExpr(
                         new TableNameExpr(
                                 new EscapedStr(table),
-                                new EscapedStr(""))
+                                new EscapedStr(alias))
         );
         this.assignments = new AssignListExpr();
         this.whereExpr = new WhereExpr();

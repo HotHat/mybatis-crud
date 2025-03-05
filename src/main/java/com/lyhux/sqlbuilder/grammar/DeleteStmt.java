@@ -6,6 +6,10 @@ public final class DeleteStmt implements Stmt {
     OrderByExpr orderBy;
     LimitExpr limit;
 
+    public DeleteStmt() {
+        this("", "");
+    }
+
     public DeleteStmt(String table) {
         this(table, "");
     }
@@ -25,6 +29,15 @@ public final class DeleteStmt implements Stmt {
     public WhereExpr getWhereExpr() { return whereExpr; }
     public OrderByExpr getOrderBy() { return orderBy; }
     public LimitExpr getLimit() { return limit; }
+
+    public DeleteStmt table(String table) {
+        this.tableRef = new TableRefExpr(
+            new TableNameExpr(
+                new EscapedStr(table),
+                new EscapedStr(""))
+        );
+        return this;
+    }
 
     public DeleteStmt where(WhereNest nest) {
         nest.where(whereExpr);

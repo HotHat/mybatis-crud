@@ -61,17 +61,17 @@ public class MysqlGrammar implements Grammar {
                 boolean showBraces = w.isShowBraces();
 
                 // in group include inverse logic connect
-                boolean includeInverse = false;
-                String currentBool = w.getBool();
-                for (var condition : conditions) {
-                    var bool = switch (condition) {
-                        case WhereExpr w1 -> w1.getBool();
-                        case BinaryExpr b1 -> currentBool;
-                    };
-                    if (!bool.equals(currentBool)) { includeInverse = true; break; }
-                }
+                boolean includeInverse = true;
+                // String currentBool = w.getBool();
+                // for (var condition : conditions) {
+                //     var bool = switch (condition) {
+                //         case WhereExpr w1 -> w1.getBool();
+                //         case BinaryExpr b1 -> currentBool;
+                //     };
+                //     if (!bool.equals(currentBool)) { includeInverse = true; break; }
+                // }
 
-                if (showBraces && includeInverse) {
+                if (showBraces) {
                     sb.append("(");
                 }
 

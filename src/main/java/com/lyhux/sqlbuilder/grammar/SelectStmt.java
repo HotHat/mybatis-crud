@@ -188,6 +188,7 @@ public final class SelectStmt implements Stmt {
     // limit
     public SelectStmt limit(int rowCount) {
         limitExpr = new LimitExpr(rowCount);
+
         return this;
     }
 

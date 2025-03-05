@@ -11,18 +11,18 @@ import java.util.List;
 
 public final class WhereExpr implements WhereClauseExpr {
     String bool = "AND";
-    boolean root = false;
+    // boolean root = false;
     boolean showBraces = false;
 
     List<WhereClauseExpr> conditions = new ArrayList<>();
 
-    public WhereExpr() { root = true; }
+    public WhereExpr() { showBraces = false; }
     public WhereExpr(String bool) { this.bool = bool; }
-    public WhereExpr(boolean root) { this.root = root; showBraces = false; }
-    public WhereExpr(boolean root, boolean showBrackets) { this.root = root; this.showBraces = showBrackets; }
+    public WhereExpr(boolean showBraces) {  this.showBraces = showBraces; }
+    public WhereExpr(String bool, boolean showBrackets) { this.bool = bool; this.showBraces = showBrackets; }
 
     public String getBool() { return bool; }
-    public boolean isRoot() { return root; }
+    // public boolean isRoot() { return root; }
     public boolean isShowBraces() { return showBraces; }
 
     public List<WhereClauseExpr> getConditions() { return conditions; }
@@ -30,14 +30,17 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public void add(WhereClauseExpr expr) {
         conditions.add(expr);
-        showBraces = conditions.size() > 1 && !isRoot();
+        // if (!showBraces) {
+        //     showBraces = conditions.size() > 1 && !isRoot();
+        // }
     }
 
     public void add(WhereClauseExpr expr, String bool) {
         conditions.add(expr);
         this.bool = bool;
-
-        showBraces = conditions.size() > 1 && !isRoot();
+        // if (!showBraces) {
+        //     showBraces = conditions.size() > 1 && !isRoot();
+        // }
     }
 
 
@@ -334,18 +337,18 @@ public final class WhereExpr implements WhereClauseExpr {
 
 
     public WhereExpr where(WhereNest query) {
-        return  where(query, false, "AND");
+        return  where(query, true, "AND");
     }
 
-    public WhereExpr where(WhereNest query, boolean isRoot, String bool) {
-        var expr = new WhereExpr(isRoot);
+    public WhereExpr where(WhereNest query, boolean showBraces, String bool) {
+        var expr = new WhereExpr(showBraces);
         add(expr, bool);
         query.where(expr);
         return this;
     }
 
     public WhereExpr orWhere(WhereNest query) {
-        var expr = new WhereExpr("OR");
+        var expr = new WhereExpr("OR", true);
         add(expr);
         query.where(expr);
         return this;
@@ -427,7 +430,7 @@ public final class WhereExpr implements WhereClauseExpr {
     }
 
     public <T> WhereExpr baseWhere(String column, String operator, List<T> params, JDBCType type, boolean isAnd, boolean isRaw) {
-        var expr = new WhereExpr(false);
+        var expr = new WhereExpr();
         var values = new ArrayList<TypeValue<T>>();
         int count = 0;
         var mark = new StringBuilder();
@@ -453,7 +456,7 @@ public final class WhereExpr implements WhereClauseExpr {
 
     //
     public WhereExpr whereExists(SelectStmt stmt) {
-        var expr = new WhereExpr(false, true);
+        var expr = new WhereExpr(true);
 
         expr.add(new BinaryExpr(
                 new RawStr(""),
@@ -469,14 +472,14 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public WhereExpr when(boolean test, WhereNest query) {
         if (test) {
-            where(query, false, "AND");
+            where(query, true, "AND");
         }
         return this;
     }
 
     public WhereExpr orWhen(boolean test, WhereNest query) {
         if (test) {
-            where(query, false, "OR");
+            where(query, true, "OR");
         }
         return this;
     }

@@ -1,5 +1,6 @@
 package com.lyhux.sqlbuilder;
 
+import com.lyhux.sqlbuilder.grammar.ExprResult;
 import com.lyhux.sqlbuilder.grammar.SelectStmt;
 import com.lyhux.sqlbuilder.grammar.WhereNest;
 import com.lyhux.sqlbuilder.vendor.Grammar;
@@ -9,6 +10,9 @@ import java.util.*;
 
 public class SelectAdapter extends BaseAdapter {
     SelectStmt selectStmt;
+
+    static boolean isLogQuery = false;
+    static List<ExprResult> queryLogs;
 
     public SelectAdapter(Connection conn, Grammar grammar) {
         super(conn, grammar);
@@ -117,6 +121,61 @@ public class SelectAdapter extends BaseAdapter {
         return this;
     }
 
+    public static void beginLogQuery() {
+        isLogQuery = true;
+        queryLogs = new ArrayList<>();
+    }
+
+    public static List<ExprResult> getLogQuery() {
+        isLogQuery = false;
+        var result = queryLogs;
+        queryLogs = null;
+        return result;
+    }
+
+    public ExprResult getQuery() {
+        return grammar.compile(selectStmt);
+    }
+
+    public Optional<Map<String, Object>> first() throws Exception {
+        selectStmt.limit(1);
+
+        var result = get();
+        if (result.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(result.getFirst());
+        }
+    }
+
+    public List<? extends Map<String, Object>> get() throws Exception {
+        var result = new ArrayList<Map<String, Object>>();
+
+        var compileResult = grammar.compile(selectStmt);
+
+        if (isLogQuery) {
+            queryLogs.add(compileResult);
+        }
+
+        PreparedStatement stm =  conn.prepareStatement(compileResult.statement());
+        ResultSet rs = stm.executeQuery();
+
+        while (rs.next()) {
+            Map<String, Object> rowData = new HashMap<>();
+
+            var meta = rs.getMetaData();
+            int numberOfColumns = meta.getColumnCount();
+            for (int i = 1; i <= numberOfColumns; i++) {
+                rowData.put(meta.getColumnName(i), rs.getObject(i));
+            }
+
+            // var target = BeanMapUtil.mapToBean(rowData, clazz);
+            result.add(rowData);
+        }
+
+        return result;
+    }
+    /*
     public<T> Optional<T> first(Class<T> clazz) throws Exception {
         selectStmt.limit(1);
 
@@ -151,6 +210,7 @@ public class SelectAdapter extends BaseAdapter {
 
         return result;
     }
+     */
 
 
 }

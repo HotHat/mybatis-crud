@@ -1,5 +1,6 @@
 package com.lyhux.sqlbuilder;
 
+import com.lyhux.sqlbuilder.grammar.SelectStmt;
 import com.lyhux.sqlbuilder.grammar.UpdateStmt;
 import com.lyhux.sqlbuilder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.AfterEach;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 public class AdapterTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "";
+    static final String PASSWORD = "123456";
 
     private Connection conn;
 
@@ -94,19 +95,30 @@ public class AdapterTest {
 
     @Test
     public void testSelect() throws Exception {
+        SelectAdapter.beginLogQuery();
+
         var adapter = new SelectAdapter(conn, new MysqlGrammar());
         var lst = adapter
             .from("users")
-            .get(UserBean.class);
+            .get();
 
         System.out.println(lst);
 
         adapter = new SelectAdapter(conn, new MysqlGrammar());
+
         var user = adapter
             .from("users")
-            .first(UserBean.class);
+            .first();
+
+        // var result = user.getQuery();
+        // System.out.printf("Selected record: %s\n%s", result.statement(), result.bindings());
 
         System.out.println(user);
+
+        var logs = SelectAdapter.getLogQuery();
+        for (var log : logs) {
+            System.out.printf("sql: %s\nbindings:%s\n", log.statement(), log.bindings());
+        }
 
     }
 }

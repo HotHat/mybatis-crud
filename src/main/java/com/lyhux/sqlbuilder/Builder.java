@@ -62,7 +62,8 @@ public class Builder {
     public void commit() throws SQLException {
         if (transactLevel > 1) {
             transactLevel--;
-            stack.pop();
+            var savepoint = stack.pop();
+            conn.releaseSavepoint(savepoint);
         } else if (transactLevel == 1) {
             conn.commit();
             conn.setAutoCommit(true);

@@ -10,13 +10,13 @@ public class BuilderTest {
         var test1 = true;
         var test2 = false;
 
-        var selector = builder
+        var selector = builder.selectQuery()
             .select()
-            .from("user")
-            .select("id", "name", "age")
+            .from("users")
+            .select("id", "username", "age")
             .where((query) -> {
                 query.where("id", 1)
-                     .whereIn("name", "haha", "baba")
+                     .whereIn("username", "haha", "baba")
                      .when(test1, (q) -> {
                          q.where("id", 3).orWhere("age", 2);
                      })
@@ -28,21 +28,21 @@ public class BuilderTest {
 
         ;
 
-        var result = builder.compile();
-        System.out.println(result);
+        var result = selector.select();
 
-        selector.replaceSelect()
-            .selectRaw("count(*) as aggregate");
-
-        result = builder.compile();
-        System.out.println(result);
-        selector.recoverSelect();
-        result = builder.compile();
-        System.out.println(result);
-
+        // selector.replaceSelect()
+        //     .selectRaw("count(*) as aggregate");
+        //
+        // result = builder.compile();
+        // System.out.println(result);
+        // selector.recoverSelect();
+        // result = builder.compile();
+        // System.out.println(result);
 
 
 
+
+        /*
         var res = builder.select((stmt) -> {
             stmt.from("user")
                 .select("id", "name", "age")
@@ -62,6 +62,7 @@ public class BuilderTest {
         }).compile();
 
         System.out.println(res);
+         */
     }
 
 }

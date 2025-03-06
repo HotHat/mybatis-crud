@@ -157,7 +157,7 @@ public class ConnectionTest {
             }
         }
     }
-
+    /*
     @Test
     public void testBuilderInert() throws SQLException {
         var builder = new Builder(conn, new MysqlGrammar());
@@ -229,6 +229,7 @@ public class ConnectionTest {
 
         System.out.println("Primary key: " + primaryKey);
     }
+    */
 
     @Test
     public void testFetchData() throws Exception {
@@ -303,4 +304,62 @@ public class ConnectionTest {
             System.out.printf("bean: %s\n", typeTestBean);
         }
     }
+
+    /*
+    @Test
+    public void testTranslation() throws Exception {
+        conn.setAutoCommit(false);
+        var rowCount = new Builder(conn, new MysqlGrammar()).update((update) -> {
+            update
+                .table("users")
+                .set((assign) -> {
+                    assign
+                        .set("username", "trans111");
+                })
+                .where((query) -> {
+                    query.where("id", 6);
+                });
+        });
+
+        System.out.println("Primary key: " + rowCount);
+
+        // if (rowCount == 1) {
+        //     throw new Exception("test translation failed");
+        // }
+
+        rowCount = new Builder(conn, new MysqlGrammar()).update((update) -> {
+            update
+                .table("users")
+                .set((assign) -> {
+                    assign
+                        .set("username", "trans222");
+                })
+                .where((query) -> {
+                    query.where("id", 7);
+                });
+        });
+
+        System.out.println("Primary key: " + rowCount);
+
+
+        conn.commit();
+
+        // after transaction commit will auto commit?? No! should turn on manually
+        conn.setAutoCommit(true);
+        rowCount = new Builder(conn, new MysqlGrammar()).update((update) -> {
+            update
+                .table("users")
+                .set((assign) -> {
+                    assign
+                        .set("username", "trans333");
+                })
+                .where((query) -> {
+                    query.where("id", 8);
+                });
+        });
+
+        System.out.println("Primary key: " + rowCount);
+
+    }
+     */
 }

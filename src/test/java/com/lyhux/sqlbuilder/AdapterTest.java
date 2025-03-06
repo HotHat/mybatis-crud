@@ -1,7 +1,5 @@
 package com.lyhux.sqlbuilder;
 
-import com.lyhux.sqlbuilder.grammar.SelectStmt;
-import com.lyhux.sqlbuilder.grammar.UpdateStmt;
 import com.lyhux.sqlbuilder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +13,7 @@ import java.time.LocalDateTime;
 public class AdapterTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "123456";
+    static final String PASSWORD = "";
 
     private Connection conn;
 
@@ -119,6 +117,83 @@ public class AdapterTest {
         for (var log : logs) {
             System.out.printf("sql: %s\nbindings:%s\n", log.statement(), log.bindings());
         }
+    }
+
+    @Test
+    public void testTransaction() throws SQLException {
+        var builder = new Builder(conn, new MysqlGrammar());
+        builder.beginTransaction();
+
+        var rowCount = builder.updateQuery()
+               .table("users")
+               .set((wrapper) -> {
+                   wrapper.set("username", "tr1");
+               })
+               .where(wrapper -> {
+                   wrapper.where("id", 6);
+               }).update();
+
+        System.out.printf("Updated record count: %s\n", rowCount);
+
+        rowCount = builder.updateQuery()
+               .table("users")
+               .set((wrapper) -> {
+                   wrapper.set("username", "tr2");
+               })
+               .where(wrapper -> {
+                   wrapper.where("id", 7);
+               }).update();
+        System.out.printf("Updated record count: %s\n", rowCount);
+
+        builder.commit();
+    }
+
+
+    @Test
+    public void testTransactionLevels() throws SQLException {
+        var builder = new Builder(conn, new MysqlGrammar());
+        // level 1
+        builder.beginTransaction();
+            // level 2 commit
+            builder.beginTransaction();
+                // level rollback
+                builder.beginTransaction();
+        var rowCount = builder.updateQuery()
+                          .table("users")
+                          .set((wrapper) -> {
+                              wrapper.set("username", "rollback");
+                          })
+                          .where(wrapper -> {
+                              wrapper.where("id", 8);
+                          }).update();
+        System.out.printf("transaction rollback count: %s\n", rowCount);
+
+                builder.rollback();
+        rowCount = builder.updateQuery()
+                          .table("users")
+                          .set((wrapper) -> {
+                              wrapper.set("username", "commit");
+                          })
+                          .where(wrapper -> {
+                              wrapper.where("id", 9);
+                          }).update();
+        System.out.printf("transaction commit count: %s\n", rowCount);
+
+            builder.commit();
+
+        // end top
+        builder.commit();
+
+        // after transaction
+        rowCount = builder.updateQuery()
+                          .table("users")
+                          .set((wrapper) -> {
+                              wrapper.set("username", "commit");
+                          })
+                          .where(wrapper -> {
+                              wrapper.where("id", 6);
+                          }).update();
+        System.out.printf("auto commit count: %s\n", rowCount);
 
     }
 }

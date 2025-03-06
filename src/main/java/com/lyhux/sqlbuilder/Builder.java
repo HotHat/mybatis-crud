@@ -1,81 +1,74 @@
 package com.lyhux.sqlbuilder;
 
-import com.lyhux.sqlbuilder.grammar.*;
 import com.lyhux.sqlbuilder.vendor.Grammar;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
+import java.util.Stack;
 
 public class Builder {
     Connection conn;
     Grammar grammar;
-    Stmt stmt;
+    Stack<Savepoint> stack;
+    int transactLevel;
 
     public Builder(Connection conn, Grammar grammar) {
         this.conn = conn;
         this.grammar = grammar;
+        stack = new Stack<>();
+        transactLevel = 0;
     }
 
-    public Builder select(SelectStmtNest select) {
-        var selectStmt = new SelectStmt();
-        select.builder(selectStmt);
-        stmt = selectStmt;
-        return this;
+    public SelectAdapter selectQuery(){
+        return new SelectAdapter(conn, grammar);
     }
 
-    public SelectStmt select() {
-        var selectStmt = new SelectStmt();
-        stmt = selectStmt;
-        return selectStmt;
+    public InsertAdapter insertQuery(){
+        return new InsertAdapter(conn, grammar);
     }
 
-    public Long insert(InsertStmtNest insert) throws SQLException {
-        var insertStmt = new InsertStmt();
-        insert.builder(insertStmt);
-        // stmt = insertStmt;
-        var exprValue = grammar.compile(insertStmt);
-
-        return dmlExecute(exprValue, true);
+    public DeleteAdapter deleteQuery(){
+        return new DeleteAdapter(conn, grammar);
     }
 
-    public Long update(UpdateStmtNest update) throws SQLException {
-        var updateStmt = new UpdateStmt();
-        update.builder(updateStmt);
-        // stmt = insertStmt;
-        var exprValue = grammar.compile(updateStmt);
-
-        return dmlExecute(exprValue, false);
+    public UpdateAdapter updateQuery(){
+        return new UpdateAdapter(conn, grammar);
     }
 
-    public ExprResult compile() {
-        return grammar.compile(stmt);
-    }
+    public void beginTransaction() throws SQLException {
+        transactLevel++;
 
-
-
-    public Long dmlExecute(ExprResult result, boolean isInsert) throws SQLException {
-        var prepare = conn.prepareStatement(
-            result.statement(),
-            isInsert ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS
-        );
-        // prepare.execute();
-
-        int count = 1;
-        for (var it : result.bindings()) {
-            prepare.setObject(count++, it.value());
+        if (transactLevel == 1) {
+            conn.setAutoCommit(false);
+        } else {
+            var savepoint = conn.setSavepoint();
+            stack.push(savepoint);
         }
+    }
 
-        int ret = prepare.executeUpdate();
-        // insert return primary key
-        if (ret == 1 && isInsert) {
-            var primaryKeySet = prepare.getGeneratedKeys();
-            if (primaryKeySet.next()) {
-                return (long)primaryKeySet.getInt(1);
-            }
+    public void rollback() throws SQLException {
+        if (transactLevel > 1) {
+            transactLevel--;
+            var savepoint = stack.pop();
+            conn.rollback(savepoint);
+        } else if (transactLevel == 1) {
+            conn.rollback();
+        } else {
+            transactLevel = 0;
         }
+    }
 
-        return (long) ret;
+    public void commit() throws SQLException {
+        if (transactLevel > 1) {
+            transactLevel--;
+            stack.pop();
+        } else if (transactLevel == 1) {
+            conn.commit();
+            conn.setAutoCommit(true);
+        } else {
+            transactLevel = 0;
+        }
     }
 
 }

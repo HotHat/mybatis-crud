@@ -299,9 +299,9 @@ public class ConnectionTest {
 
 
             System.out.printf("rowData: %s\n", rowData);
-            TypeTestBean typeTestBean = BeanMapUtil.mapToBean(rowData, TypeTestBean.class);
+            // TypeTestBean typeTestBean = BeanMapUtil.mapToBean(rowData, TypeTestBean.class);
 
-            System.out.printf("bean: %s\n", typeTestBean);
+            // System.out.printf("bean: %s\n", typeTestBean);
         }
     }
 

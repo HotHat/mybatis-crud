@@ -1,5 +1,7 @@
 package com.lyhux.mybatiscrud.builder.grammar;
 
+import com.lyhux.mybatiscrud.builder.grammar.insert.*;
+
 import java.util.Arrays;
 
 public final class InsertStmt implements Stmt {

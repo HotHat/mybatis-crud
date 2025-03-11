@@ -12,6 +12,7 @@
     <modules>
         <module>../mybatis-crud-builder</module>
         <module>../mybatis-crud-bean</module>
+        <module>../mybatis-crud-model</module>
     </modules>
 
     <properties>

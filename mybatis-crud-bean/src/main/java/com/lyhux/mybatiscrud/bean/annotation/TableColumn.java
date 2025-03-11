@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
-public @interface TableName {
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+public @interface TableColumn {
     String value() default "";
 }

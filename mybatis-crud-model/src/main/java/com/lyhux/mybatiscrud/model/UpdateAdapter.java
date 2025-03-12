@@ -1,4 +1,4 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.builder.grammar.UpdateStmt;
 import com.lyhux.mybatiscrud.builder.grammar.WhereNest;

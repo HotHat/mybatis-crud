@@ -1,4 +1,4 @@
-package com.lyhux.mybatiscrud.model;
+package com.lyhux.mybatiscrud.test;
 
 import org.junit.jupiter.api.Test;
 

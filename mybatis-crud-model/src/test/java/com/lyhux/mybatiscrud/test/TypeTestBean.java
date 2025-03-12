@@ -1,4 +1,4 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.test;
 
 import java.math.BigDecimal;
 import java.sql.Date;

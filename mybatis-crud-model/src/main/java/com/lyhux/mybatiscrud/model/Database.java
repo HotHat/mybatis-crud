@@ -1,4 +1,4 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
@@ -7,13 +7,13 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Stack;
 
-public class Builder {
+public class Database {
     Connection conn;
     Grammar grammar;
     Stack<Savepoint> stack;
     int transactLevel;
 
-    public Builder(Connection conn, Grammar grammar) {
+    public Database(Connection conn, Grammar grammar) {
         this.conn = conn;
         this.grammar = grammar;
         stack = new Stack<>();

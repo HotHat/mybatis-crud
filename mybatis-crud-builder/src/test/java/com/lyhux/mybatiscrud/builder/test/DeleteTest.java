@@ -1,5 +1,6 @@
-package com.lyhux.mybatiscrud.builder.grammar;
+package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.DeleteStmt;
 import org.junit.jupiter.api.Test;
 
 public class DeleteTest extends MysqlGrammarTest {

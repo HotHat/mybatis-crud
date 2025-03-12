@@ -1,10 +1,6 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.test;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class UserBean {
@@ -70,5 +66,13 @@ public class UserBean {
 
     public void setUpdated_at(LocalDateTime updated_at) {
         this.updated_at = updated_at;
+    }
+
+
+    @Override
+    public String toString() {
+        return "UserBean [id=" + id + ", username=" + username + ", password=" + password + ", gender="
+            + gender + ", email=" + email + ", created_at=" + created_at + ", updated_at="
+            + updated_at + "]";
     }
 }

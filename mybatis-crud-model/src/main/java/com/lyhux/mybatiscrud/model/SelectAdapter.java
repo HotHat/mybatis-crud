@@ -1,5 +1,6 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.model;
 
+import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
 import com.lyhux.mybatiscrud.builder.grammar.SelectStmt;
 import com.lyhux.mybatiscrud.builder.grammar.WhereNest;
@@ -7,6 +8,8 @@ import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
 import java.sql.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SelectAdapter extends BaseAdapter {
     SelectStmt selectStmt;
@@ -121,22 +124,6 @@ public class SelectAdapter extends BaseAdapter {
         return this;
     }
 
-    public static void beginLogQuery() {
-        isLogQuery = true;
-        queryLogs = new ArrayList<>();
-    }
-
-    public static List<ExprResult> getLogQuery() {
-        isLogQuery = false;
-        var result = queryLogs;
-        queryLogs = null;
-        return result;
-    }
-
-    public ExprResult getQuery() {
-        return grammar.compile(selectStmt);
-    }
-
     public Optional<Map<String, Object>> first() throws Exception {
         selectStmt.limit(1);
 
@@ -146,6 +133,26 @@ public class SelectAdapter extends BaseAdapter {
         } else {
             return Optional.of(result.getFirst());
         }
+    }
+    public<T> Optional<T> first(Class<T> bean) throws Exception {
+        var result = first();
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(BeanMapUtil.mapToBean(result.get(), bean));
+    }
+
+    public <T> List<T> get(Class<T> bean) throws Exception {
+        Function<Map<String, Object>, T> functor = (map) -> {
+            try {
+                return BeanMapUtil.mapToBean(map, bean);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        return get().stream().map(functor).collect(Collectors.toList());
     }
 
     public List<? extends Map<String, Object>> get() throws Exception {
@@ -175,42 +182,5 @@ public class SelectAdapter extends BaseAdapter {
 
         return result;
     }
-    /*
-    public<T> Optional<T> first(Class<T> clazz) throws Exception {
-        selectStmt.limit(1);
-
-        var result = get(clazz);
-        if (result.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(result.get(0));
-        }
-    }
-
-    public <T> List<T> get(Class<T> clazz) throws Exception {
-        var result = new ArrayList<T>();
-
-        var compileResult = grammar.compile(selectStmt);
-
-        PreparedStatement stm =  conn.prepareStatement(compileResult.statement());
-        ResultSet rs = stm.executeQuery();
-
-        while (rs.next()) {
-            Map<String, Object> rowData = new HashMap<>();
-
-            var meta = rs.getMetaData();
-            int numberOfColumns = meta.getColumnCount();
-            for (int i = 1; i <= numberOfColumns; i++) {
-                rowData.put(meta.getColumnName(i), rs.getObject(i));
-            }
-
-            var target = BeanMapUtil.mapToBean(rowData, clazz);
-            result.add(target);
-        }
-
-        return result;
-    }
-     */
-
 
 }

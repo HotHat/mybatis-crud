@@ -1,5 +1,9 @@
-package com.lyhux.mybatiscrud.builder.grammar;
+package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.EscapedStr;
+import com.lyhux.mybatiscrud.builder.grammar.LimitExpr;
+import com.lyhux.mybatiscrud.builder.grammar.OrderByExpr;
+import com.lyhux.mybatiscrud.builder.grammar.OrderByItem;
 import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import org.junit.jupiter.api.Test;
 

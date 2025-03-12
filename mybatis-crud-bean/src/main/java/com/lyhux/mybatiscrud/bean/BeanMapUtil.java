@@ -3,6 +3,7 @@ package com.lyhux.mybatiscrud.bean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BeanMapUtil {
@@ -34,18 +35,20 @@ public class BeanMapUtil {
             field.setAccessible(true);
             if (map.containsKey(field.getName())) {
                 var value = map.get(field.getName());
-                // type equal
-                if (   (field.getType().getName().equals("int") && value instanceof Integer)
-                    || (field.getType().getName().equals("long") && value instanceof Long)
-                    || (field.getType().getName().equals("float") && value instanceof Float)
-                    || (field.getType().getName().equals("double") && value instanceof Double)
-                    || (field.getType().getName().equals("boolean") && value instanceof Boolean)
-                    || (field.getType().getName().equals("byte") && value instanceof Byte)
-                    || (field.getType().getName().equals("short") && value instanceof Short)
-                    || (field.getType().getName().equals("char") && value instanceof Character)
-                    || (field.getType().getName().equals(value.getClass().getName()) )
-                ) {
-                    field.set(object, map.get(field.getName()));
+                if (value != null) {
+                    // type equal
+                    if (   (field.getType().getName().equals("int") && value instanceof Integer)
+                        || (field.getType().getName().equals("long") && value instanceof Long)
+                        || (field.getType().getName().equals("float") && value instanceof Float)
+                        || (field.getType().getName().equals("double") && value instanceof Double)
+                        || (field.getType().getName().equals("boolean") && value instanceof Boolean)
+                        || (field.getType().getName().equals("byte") && value instanceof Byte)
+                        || (field.getType().getName().equals("short") && value instanceof Short)
+                        || (field.getType().getName().equals("char") && value instanceof Character)
+                        || (field.getType().getName().equals(value.getClass().getName()) )
+                    ) {
+                        field.set(object, map.get(field.getName()));
+                    }
                 }
             }
         }

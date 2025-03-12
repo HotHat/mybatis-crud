@@ -1,4 +1,4 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.test;
 
 import com.lyhux.mybatiscrud.builder.grammar.InsertStmt;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;

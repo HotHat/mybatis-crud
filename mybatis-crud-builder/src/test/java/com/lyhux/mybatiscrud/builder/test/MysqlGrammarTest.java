@@ -1,11 +1,10 @@
-package com.lyhux.mybatiscrud.builder.grammar;
+package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.*;
+import com.lyhux.mybatiscrud.builder.grammar.insert.*;
+import com.lyhux.mybatiscrud.builder.grammar.update.*;
+import com.lyhux.mybatiscrud.builder.grammar.select.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ColumnExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
-import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
-import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
-import com.lyhux.mybatiscrud.builder.grammar.select.SelectExpr;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.BeforeEach;
 

@@ -1,6 +1,7 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.test;
 
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
+import com.lyhux.mybatiscrud.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,6 @@ public class AdapterTest {
 
     @Test
     public void testSelect() throws Exception {
-        SelectAdapter.beginLogQuery();
 
         var adapter = new SelectAdapter(conn, new MysqlGrammar());
         var lst = adapter
@@ -112,19 +112,14 @@ public class AdapterTest {
         // System.out.printf("Selected record: %s\n%s", result.statement(), result.bindings());
 
         System.out.println(user);
-
-        var logs = SelectAdapter.getLogQuery();
-        for (var log : logs) {
-            System.out.printf("sql: %s\nbindings:%s\n", log.statement(), log.bindings());
-        }
     }
 
     @Test
     public void testTransaction() throws SQLException {
-        var builder = new Builder(conn, new MysqlGrammar());
-        builder.beginTransaction();
+        var db = new Database(conn, new MysqlGrammar());
+        db.beginTransaction();
 
-        var rowCount = builder.updateQuery()
+        var rowCount = db.updateQuery()
                .table("users")
                .set((wrapper) -> {
                    wrapper.set("username", "tr1");
@@ -135,7 +130,7 @@ public class AdapterTest {
 
         System.out.printf("Updated record count: %s\n", rowCount);
 
-        rowCount = builder.updateQuery()
+        rowCount = db.updateQuery()
                .table("users")
                .set((wrapper) -> {
                    wrapper.set("username", "tr2");
@@ -145,13 +140,13 @@ public class AdapterTest {
                }).update();
         System.out.printf("Updated record count: %s\n", rowCount);
 
-        builder.commit();
+        db.commit();
     }
 
 
     @Test
     public void testTransactionLevels() throws SQLException {
-        var builder = new Builder(conn, new MysqlGrammar());
+        var builder = new Database(conn, new MysqlGrammar());
         // level 1
         builder.beginTransaction();
             // level 2 commit
@@ -194,6 +189,25 @@ public class AdapterTest {
                               wrapper.where("id", 6);
                           }).update();
         System.out.printf("auto commit count: %s\n", rowCount);
+    }
 
+    @Test
+    public void testGetMapToBean() throws Exception {
+        var db = new Database(conn, new MysqlGrammar());
+        var selector = db.selectQuery();
+
+        var lst = selector
+            .from("users")
+            .get(UserBean.class);
+
+        for (var row : lst) {
+            System.out.println(row);
+        }
+
+        var user = db.selectQuery()
+            .from("users")
+            .first(UserBean.class);
+
+        System.out.printf("user: %s\n", user);
     }
 }

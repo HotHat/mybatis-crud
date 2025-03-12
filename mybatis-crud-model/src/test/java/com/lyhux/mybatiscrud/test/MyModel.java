@@ -1,4 +1,7 @@
-package com.lyhux.mybatiscrud.model;
+package com.lyhux.mybatiscrud.test;
+
+import com.lyhux.mybatiscrud.model.GenericTypeResolver;
+import com.lyhux.mybatiscrud.model.Model;
 
 import java.lang.reflect.InvocationTargetException;
 

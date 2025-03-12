@@ -1,5 +1,6 @@
-package com.lyhux.mybatiscrud.builder.grammar;
+package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
 import org.junit.jupiter.api.Test;

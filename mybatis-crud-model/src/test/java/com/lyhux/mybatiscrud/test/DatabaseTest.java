@@ -1,16 +1,17 @@
-package com.lyhux.mybatiscrud.builder;
+package com.lyhux.mybatiscrud.test;
 
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
+import com.lyhux.mybatiscrud.model.Database;
 import org.junit.jupiter.api.Test;
 
-public class BuilderTest {
+public class DatabaseTest {
     @Test
     public void testBuilder() {
-        var builder = new Builder(null, new MysqlGrammar());
+        var db = new Database(null, new MysqlGrammar());
         var test1 = true;
         var test2 = false;
 
-        var selector = builder.selectQuery()
+        var selector = db.selectQuery()
             .select()
             .from("users")
             .select("id", "username", "age")

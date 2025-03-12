@@ -1,5 +1,6 @@
-package com.lyhux.mybatiscrud.builder.grammar;
+package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ColumnExpr;

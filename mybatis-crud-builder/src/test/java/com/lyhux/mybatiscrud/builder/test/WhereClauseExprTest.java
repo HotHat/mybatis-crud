@@ -208,5 +208,16 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
 
     }
 
+    @Test
+    public void testWhereRaw() {
+        var expr = new WhereExpr();
+        expr
+            .whereRaw("id=? and name=?", List.of(TypeValue.of("1"), TypeValue.of("name")))
+        ;
+
+        print(expr);
+
+    }
+
 
 }

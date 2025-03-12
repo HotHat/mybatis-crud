@@ -208,4 +208,33 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         print(users);
     }
+
+    @Test
+    public void testUnion() {
+        var order1 = new SelectStmt();
+        order1.selectRaw("1")
+            .from("orders")
+            .where((query) -> {
+                query.whereColumn("orders.user_id",  "users.id").where((wrapper) -> {
+                    wrapper.whereColumn("orders.order_id",  "orders.id");
+                });
+
+            });
+
+        var order2 = new SelectStmt();
+        order2.from("users")
+            .where((query) -> {
+                query.where("user_id", ">", 123);
+            });
+
+        var order3 = new SelectStmt();
+        order3.from("users")
+            .union(order1)
+            .union(order2)
+            .where((query) -> {
+                query.where("user_id", ">", 123);
+            });
+
+        print(order3);
+    }
 }

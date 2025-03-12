@@ -301,6 +301,12 @@ public class MysqlGrammar implements Grammar {
         var groupByExpr = stmt.getGroupByExpr();
         var orderByExpr = stmt.getOrderByExpr();
         var limitExpr = stmt.getLimitExpr();
+        var unionClause = stmt.getUnionClause();
+
+        // union bracket
+        if (!unionClause.getUnionItems().isEmpty()) {
+            sb.append("(");
+        }
 
         // select
         sb.append("SELECT ")
@@ -343,6 +349,22 @@ public class MysqlGrammar implements Grammar {
             sb.append(" LIMIT ").append(compile(limitExpr));
         }
         // for
+
+        // union bracket
+        if (!unionClause.getUnionItems().isEmpty()) {
+            sb.append(")");
+        }
+
+        // union clause
+        for (var union : unionClause.getUnionItems()) {
+            sb.append(" ").append(union.type()).append(" ");
+
+            sb.append("(");
+            result = compile(union.selectStmt());
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
+            sb.append(")");
+        }
 
         return new ExprResult(sb.toString(), bindings);
     }

@@ -14,6 +14,8 @@ public final class SelectStmt implements Stmt {
     OrderByExpr orderByExpr;
     LimitExpr limitExpr;
     ForExpr forExpr;
+    UnionClause unionClause;
+
 
     public SelectStmt() {
         selectExpr = new SelectExpr();
@@ -23,6 +25,7 @@ public final class SelectStmt implements Stmt {
         groupByExpr = new GroupByExpr();
         orderByExpr = new OrderByExpr();
         limitExpr = null;
+        unionClause = new UnionClause();
     }
 
     public SelectStmt replaceSelect() {
@@ -43,6 +46,7 @@ public final class SelectStmt implements Stmt {
     public GroupByExpr getGroupByExpr() { return groupByExpr; }
     public OrderByExpr getOrderByExpr() { return orderByExpr; }
     public LimitExpr getLimitExpr() { return limitExpr; }
+    public UnionClause getUnionClause() { return unionClause; }
 
     public SelectStmt select(String... fields) {
         selectExpr.addAll(Arrays.stream(fields).map(EscapedStr::new).toList());
@@ -81,12 +85,12 @@ public final class SelectStmt implements Stmt {
     }
 
     public SelectStmt where(WhereNest query) {
-        whereExpr.where(query, true, "AND");
+        whereExpr.where(query, false, "AND");
         return this;
     }
 
     public SelectStmt orWhere(WhereNest query) {
-        whereExpr.where(query, true, "OR");
+        whereExpr.where(query, false, "OR");
         return this;
     }
 
@@ -202,6 +206,11 @@ public final class SelectStmt implements Stmt {
     // for update | share
     public SelectStmt forUpdate() {
         forExpr = new ForExpr("UPDATE");
+        return this;
+    }
+
+    public SelectStmt union(SelectStmt other) {
+        unionClause.add(new UnionItem("UNION", other));
         return this;
     }
 

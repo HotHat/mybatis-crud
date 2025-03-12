@@ -362,8 +362,17 @@ public final class WhereExpr implements WhereClauseExpr {
         return baseWhere(column, operator, value, false, false);
     }
 
-    public <T> WhereExpr whereRaw(String column, String operator, TypeValue<T> value) {
-        return baseWhere(column, operator, value, true, true);
+    public WhereExpr whereRaw(String column, List<TypeValue<String>> values) {
+        var expr = new WhereExpr();
+        expr.add(new BinaryExpr(
+            new RawStr(column),
+            "",
+            new BindingValue<>(new RawStr(""), values)
+        ), "AND");
+
+        add(expr);
+
+        return this;
     }
 
     // orWhere group

@@ -90,5 +90,8 @@ public class ValueGroupExpr {
         return this;
     }
 
-
+    public ValueGroupExpr add(Object value) {
+        this.valueExpr.add(new BindingValue<>(new RawStr("?"), TypeValue.of(value)));
+        return this;
+    }
 }

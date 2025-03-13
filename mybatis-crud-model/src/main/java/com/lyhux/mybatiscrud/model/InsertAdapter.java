@@ -1,5 +1,6 @@
 package com.lyhux.mybatiscrud.model;
 
+import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
 import com.lyhux.mybatiscrud.builder.grammar.InsertStmt;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueNest;
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
@@ -30,8 +31,15 @@ public class InsertAdapter extends BaseAdapter {
         return this;
     }
 
-    public Long insert() throws SQLException {
-        return execute(grammar.compile(insertStmt), true);
+    public ExprResult toSql() {
+        return toSql(insertStmt);
     }
 
+    public void insert() throws SQLException {
+        execute(grammar.compile(insertStmt), false);
+    }
+
+    public Long insertGetId() throws SQLException {
+        return execute(grammar.compile(insertStmt), true);
+    }
 }

@@ -3,6 +3,7 @@ package com.lyhux.mybatiscrud.bean;
 import com.lyhux.mybatiscrud.bean.annotation.KeyType;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TableMetaInfo {
@@ -12,7 +13,7 @@ public class TableMetaInfo {
     Map<String, String> fieldColumnMap;
 
     TableMetaInfo(String tableName, String primaryKey, KeyType idType) {
-        this(tableName, primaryKey, idType, new HashMap<String, String>());
+        this(tableName, primaryKey, idType, new LinkedHashMap<>());
     }
 
     TableMetaInfo(String tableName, String primaryKey, KeyType idType, Map<String, String> fieldColumnMap) {
@@ -34,4 +35,10 @@ public class TableMetaInfo {
     public String getTableKey() { return tableKey; }
     public KeyType getKeyType() { return keyType; }
     public Map<String, String> getFieldColumnMap() { return fieldColumnMap; }
+
+    @Override
+    public String toString() {
+        return "TableMetaInfo [tableName=" + tableName + ", tableKey=" + tableKey
+            + ", keyType=" + keyType + ", fieldColumnMap=" + fieldColumnMap + "]";
+    }
 }

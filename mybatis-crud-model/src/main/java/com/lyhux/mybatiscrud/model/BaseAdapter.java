@@ -1,6 +1,7 @@
 package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
+import com.lyhux.mybatiscrud.builder.grammar.Stmt;
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
 import java.sql.Connection;
@@ -17,10 +18,10 @@ public class BaseAdapter {
         this.grammar = grammar;
     }
 
-    public Long execute(ExprResult result, boolean isInsert) throws SQLException {
+    public Long execute(ExprResult result, boolean genKey) throws SQLException {
         var prepare = conn.prepareStatement(
             result.statement(),
-            isInsert ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS
+            genKey ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS
         );
         // prepare.execute();
 
@@ -31,7 +32,7 @@ public class BaseAdapter {
 
         int ret = prepare.executeUpdate();
         // insert return primary key
-        if (ret == 1 && isInsert) {
+        if (ret == 1 && genKey) {
             var primaryKeySet = prepare.getGeneratedKeys();
             if (primaryKeySet.next()) {
                 return (long)primaryKeySet.getInt(1);
@@ -41,4 +42,7 @@ public class BaseAdapter {
         return (long) ret;
     }
 
+    public ExprResult toSql(Stmt stmt){
+        return grammar.compile(stmt);
+    }
 }

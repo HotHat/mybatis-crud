@@ -513,11 +513,14 @@ public class MysqlGrammar implements Grammar {
 
         sb.append("INSERT INTO ");
         sb.append(compile(tableName));
-        sb.append(" (");
-        sb.append(compile(columns));
-        sb.append(" )");
+        //
+        if (!columns.isEmpty()) {
+            sb.append(" (");
+            sb.append(compile(columns));
+            sb.append(" )");
+        }
+        //
         sb.append(" VALUES ");
-
         var valueGroup = values.getValues();
         int count = 0;
         for (var val : valueGroup) {

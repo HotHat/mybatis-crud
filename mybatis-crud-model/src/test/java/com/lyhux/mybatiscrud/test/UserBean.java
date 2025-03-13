@@ -1,16 +1,25 @@
 package com.lyhux.mybatiscrud.test;
 
+import com.lyhux.mybatiscrud.bean.annotation.KeyType;
+import com.lyhux.mybatiscrud.bean.annotation.TableColumn;
+import com.lyhux.mybatiscrud.bean.annotation.TableKey;
+import com.lyhux.mybatiscrud.bean.annotation.TableName;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+@TableName("users")
 public class UserBean {
+    @TableKey(type = KeyType.AUTO)
     Integer id;
     String username;
     String password;
     Integer gender;
     String email;
-    Timestamp created_at;
-    LocalDateTime updated_at;
+    @TableColumn("created_at")
+    Timestamp createdAt;
+    @TableColumn("updated_at")
+    LocalDateTime updatedAt;
 
     public Integer getId() {
         return id;
@@ -52,27 +61,27 @@ public class UserBean {
         this.email = email;
     }
 
-    public Timestamp getCreated_at() {
-        return created_at;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdated_at() {
-        return updated_at;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(LocalDateTime updated_at) {
-        this.updated_at = updated_at;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
 
     @Override
     public String toString() {
         return "UserBean [id=" + id + ", username=" + username + ", password=" + password + ", gender="
-            + gender + ", email=" + email + ", created_at=" + created_at + ", updated_at="
-            + updated_at + "]";
+            + gender + ", email=" + email + ", created_at=" + createdAt + ", updated_at="
+            + updatedAt + "]";
     }
 }

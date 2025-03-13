@@ -5,10 +5,7 @@ import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 
 public record TypeValue<T>(JDBCType type, T value) {
 
@@ -68,6 +65,22 @@ public record TypeValue<T>(JDBCType type, T value) {
 
     public static <T> TypeValue<T> of(JDBCType type, T value) {
         return new TypeValue<>(type, value);
+    }
+
+    public static TypeValue<?> of(Object value) {
+        return switch (value) {
+            case Integer i -> of(i);
+            case Long l -> of(l);
+            case Float v -> of(v);
+            case Double v -> of(v);
+            case Date date -> of(date);
+            case Time time -> of(time);
+            case Timestamp timestamp -> of(timestamp);
+            case LocalDateTime localDateTime -> of(localDateTime);
+            case BigDecimal bigDecimal -> of(bigDecimal);
+            case null -> of();
+            default -> of(value.toString());
+        };
     }
 
     @Override

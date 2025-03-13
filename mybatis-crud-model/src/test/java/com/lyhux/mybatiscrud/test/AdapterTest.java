@@ -52,7 +52,7 @@ public class AdapterTest {
                        .addNull();
 
                }))
-            .insert();
+            .insertGetId();
 
         System.out.printf("Inserted record: %s\n", primaryKey);
     }

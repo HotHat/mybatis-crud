@@ -1,6 +1,5 @@
 package com.lyhux.mybatiscrud.test;
 
-import com.lyhux.mybatiscrud.bean.BeanFactory;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,7 +9,7 @@ import java.time.LocalDateTime;
 public class ModelTest {
     @Test
     public void modelTest() throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        var model = new MyModel();
+        var model = new UserModel();
         // MyBean bean = BeanFactory.getProxyBean(MyBean.class);
         UserBean bean = new UserBean();
         // bean.setId(1);

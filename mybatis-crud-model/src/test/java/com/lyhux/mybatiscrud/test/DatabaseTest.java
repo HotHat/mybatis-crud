@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -88,10 +89,6 @@ public class DatabaseTest {
          */
     }
 
-    private <T> T cast(Class<T> clazz, Object obj) {
-        return (T) clazz.cast(obj);
-    }
-
     @Test
     public void testModelInsert() throws SQLException {
 
@@ -103,8 +100,8 @@ public class DatabaseTest {
         System.out.printf("table mate info: %s\n",  info);
 
         UserBean bean = new UserBean();
-        // bean.setId(1);
-        bean.setUsername("model");
+        // bean.setId(14);
+        bean.setUsername("model15");
         bean.setPassword("password11");
         bean.setEmail("model@lyhux.com");
         bean.setGender(1);
@@ -117,40 +114,99 @@ public class DatabaseTest {
         // get columns
         ArrayList<String> columns = new ArrayList<>();
 
-        for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (!info.getTableKey().equals(key) && info.getKeyType() == KeyType.AUTO) {
-                columns.add(value);
+        try {
+            for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                // primary key
+                if (info.getTableKey().equals(key)) {
+                    if (info.isPrimaryKeyInteger() || info.isPrimaryKeyLong()) {
+                        Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                        // integer or long primary key set value
+                        if (info.isPrimaryKeyInteger()) {
+                            Integer val = (Integer) getter.invoke(bean);
+                            if (val != null && !val.equals(0)) {
+                                columns.add(value);
+                            }
+                        } else {
+                            Long val = (Long) getter.invoke(bean);
+                            if (val != null && !val.equals(0L)) {
+                                columns.add(value);
+                            }
+                        }
+
+                    }
+                } else {
+                    columns.add(value);
+                }
             }
+
+            Long primaryKey = insertQuery
+                .table(info.getTableName())
+                .columns(columns.toArray(new String[0]))
+                .values((wrapper) -> {
+                    try {
+                        for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+                            if (columns.contains(value)) {
+                                Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                                // Class<?> type = getter.getReturnType();
+                                Object val = getter.invoke(bean);
+                                wrapper.add(val);
+                            }
+                        }
+                    } catch (Exception  e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .insertGetId()
+                ;
+
+            if (info.isPrimaryKeyInteger() || info.isPrimaryKeyLong()) {
+                Method setter = new PropertyDescriptor(info.getTableKey(), bean.getClass()).getWriteMethod();
+                if (info.isPrimaryKeyInteger()) {
+                    setter.invoke(bean, Math.toIntExact(primaryKey));
+                } else {
+                    setter.invoke(bean, primaryKey);
+                }
+
+            }
+
+            System.out.printf("insert query key: %s\n", primaryKey);
+            System.out.printf("bean: %s\n", bean);
+
+        } catch ( IntrospectionException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
 
-        var result = insertQuery
-            .table(info.getTableName())
-            .columns(columns.toArray(new String[0]))
-            .values((wrapper) -> {
-                try {
-                    for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        if (columns.contains(value)) {
-                            Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
-                            // Class<?> type = getter.getReturnType();
-                            Object val = getter.invoke(bean);
-                            wrapper.add(val);
-                        }
-                    }
-                } catch (Exception  e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .insertGetId()
-        ;
-        System.out.printf("insert query key: %s\n", result);
+
         // System.out.printf("sql: %s\n", result.statement());
         // for (var binding : result.bindings()) {
         //     System.out.printf("%s\n", binding);
         // }
+    }
+
+    @Test
+    public void testUserModelInsert() throws SQLException {
+        Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        DatabaseManager.initManager(conn, new MysqlGrammar());
+
+        UserBean bean = new UserBean();
+        bean.setId(21L);
+        bean.setUsername("user_model");
+        bean.setPassword("password11");
+        bean.setEmail("model@lyhux.com");
+        bean.setGender(1);
+        bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        bean.setUpdatedAt(LocalDateTime.now());
+
+        var userModel = new UserModel();
+
+        System.out.printf("bean before insert %s\n", bean);
+        userModel.insert(bean);
+
+        System.out.printf("bean after insert: %s\n", bean);
     }
 
 }

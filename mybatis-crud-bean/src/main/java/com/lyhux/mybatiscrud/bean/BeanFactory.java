@@ -80,20 +80,20 @@ public class BeanFactory {
 
         var primaryKey = "";
         var keyType = KeyType.NONE;
+        var keyFieldType = "";
         var filedMap = new HashMap<String, String>();
 
         for (var field : fields) {
             var key = field.getName();
             var value = key;
-            var isTCA = field.isAnnotationPresent(TableColumn.class);
-            if (isTCA) {
-            }
+
 
             var isTKA = field.isAnnotationPresent(TableKey.class);
             if (isTKA) {
                 TableKey tka = field.getAnnotation(TableKey.class);
                 primaryKey = key;
                 keyType = tka.type();
+                keyFieldType = field.getType().getName();
             } else if (field.isAnnotationPresent(TableColumn.class)) {
                 TableColumn tca = field.getAnnotation(TableColumn.class);
                 value = tca.value();
@@ -102,7 +102,7 @@ public class BeanFactory {
             filedMap.put(key, value);
         }
 
-        return new TableMetaInfo(tableName, primaryKey, keyType, filedMap);
+        return new TableMetaInfo(tableName, primaryKey, keyType, keyFieldType, filedMap);
     }
 
 

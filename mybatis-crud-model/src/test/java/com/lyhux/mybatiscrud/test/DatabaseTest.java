@@ -26,7 +26,7 @@ import java.util.Map;
 public class DatabaseTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "123456";
+    static final String PASSWORD = "";
 
     @Test
     public void testBuilder() {
@@ -193,7 +193,7 @@ public class DatabaseTest {
         DatabaseManager.initManager(conn, new MysqlGrammar());
 
         UserBean bean = new UserBean();
-        bean.setId(21L);
+        bean.setId(21);
         bean.setUsername("user_model");
         bean.setPassword("password11");
         bean.setEmail("model@lyhux.com");
@@ -207,6 +207,17 @@ public class DatabaseTest {
         userModel.insert(bean);
 
         System.out.printf("bean after insert: %s\n", bean);
+    }
+
+    @Test
+    public void testUserModelFindById() throws Exception {
+        Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        DatabaseManager.initManager(conn, new MysqlGrammar());
+        var userModel = new UserModel();
+
+        var user = userModel.findById(9);
+        System.out.printf("bean after findById: %s\n", user);
+
     }
 
 }

@@ -5,29 +5,25 @@ import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 import java.sql.Connection;
 
 public class DatabaseManager {
-    private static Database instance = null;
     private static Connection connection = null;
     private static Grammar grammar = null;
 
-    public static void initManager(Connection connection, Grammar grammar) {
+
+    public static synchronized void initManager(Connection connection, Grammar grammar) {
         DatabaseManager.connection = connection;
         DatabaseManager.grammar = grammar;
     }
 
+    private DatabaseManager() {
+        // Private constructor
+    }
+
+    private static class DatabaseManagerHolder {
+        private static final Database INSTANCE = new Database(DatabaseManager.connection, DatabaseManager.grammar);
+    }
+
+
     public static Database getInstance() {
-        if (instance == null) {
-            if (connection == null) {
-                throw new RuntimeException("connection is missing");
-            }
-            if (grammar == null) {
-                throw new RuntimeException("grammar is missing");
-            }
-
-            synchronized (DatabaseManager.class) {
-                instance = new Database(DatabaseManager.connection, DatabaseManager.grammar);
-            }
-        }
-
-        return instance;
+        return DatabaseManagerHolder.INSTANCE;
     }
 }

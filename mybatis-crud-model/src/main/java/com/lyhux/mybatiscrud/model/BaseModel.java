@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 
 public class BaseModel<T> implements Model<T> {
     public void insert(T bean) {
@@ -90,5 +91,34 @@ public class BaseModel<T> implements Model<T> {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void update(T bean) {}
+    public void delete(T bean) {}
+
+    public Optional<T> findById(Long id) {
+        return Optional.empty();
+    }
+
+    public Optional<T> findById(Integer id) throws Exception {
+        var beanType = getBeanType();
+
+        var info = BeanFactory.getMetaInfo(beanType);
+
+        var manager = DatabaseManager.getInstance();
+        var selectQuery = manager.selectQuery();
+        var opt = selectQuery
+            .table(info.getTableName())
+            .where((wrapper) -> {
+                wrapper.where(info.getTableKey(), id);
+            })
+            .first(beanType)
+        ;
+
+        return opt.map(bean -> (T) bean);
+    }
+
+    public Class<?> getBeanType() {
+        return GenericTypeResolver.resolveTypeArguments(getClass(), Model.class)[0];
     }
 }

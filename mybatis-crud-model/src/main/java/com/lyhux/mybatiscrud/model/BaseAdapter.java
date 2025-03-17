@@ -26,8 +26,8 @@ public class BaseAdapter {
         // prepare.execute();
 
         int count = 1;
-        for (var it : result.bindings()) {
-            prepare.setObject(count++, it.value());
+        for (var binding : result.bindings()) {
+            prepare.setObject(count++, binding.value());
         }
 
         int ret = prepare.executeUpdate();

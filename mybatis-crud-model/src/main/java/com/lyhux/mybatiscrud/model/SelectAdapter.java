@@ -8,20 +8,23 @@ import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
 import java.sql.*;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class SelectAdapter extends BaseAdapter {
     SelectStmt selectStmt;
 
     static boolean isLogQuery = false;
     static List<ExprResult> queryLogs;
+    Class<?> beanQualifier;
 
     public SelectAdapter(Connection conn, Grammar grammar) {
         super(conn, grammar);
         selectStmt = new SelectStmt();
     }
 
+    public SelectAdapter qualifier(Class<?> beanQualifier) {
+        this.beanQualifier = beanQualifier;
+        return this;
+    }
 
     public SelectAdapter select(String... fields) {
         selectStmt.select(fields);
@@ -143,19 +146,30 @@ public class SelectAdapter extends BaseAdapter {
         return Optional.of(BeanMapUtil.mapToBean(result.get(), bean));
     }
 
-    public <T> List<T> get(Class<T> bean) throws Exception {
-        Function<Map<String, Object>, T> functor = (map) -> {
-            try {
-                return BeanMapUtil.mapToBean(map, bean);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
+    public List<?> getQualifier() throws Exception {
 
-        return get().stream().map(functor).collect(Collectors.toList());
+        var all = get();
+        var result = new ArrayList<>(all.size());
+        for (Map<String, Object> stringObjectMap : all) {
+            var item = BeanMapUtil.mapToBean(stringObjectMap, beanQualifier);
+            result.add(item);
+        }
+
+        return result;
     }
 
-    public List<? extends Map<String, Object>> get() throws Exception {
+    public <T> List<T> get(Class<T> bean) throws Exception {
+        var all = get();
+        var result = new ArrayList<T>(all.size());
+        for (Map<String, Object> stringObjectMap : all) {
+            var item = BeanMapUtil.mapToBean(stringObjectMap, bean);
+            result.add(item);
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> get() throws Exception {
         var result = new ArrayList<Map<String, Object>>();
 
         var compileResult = grammar.compile(selectStmt);
@@ -164,8 +178,13 @@ public class SelectAdapter extends BaseAdapter {
             queryLogs.add(compileResult);
         }
 
-        PreparedStatement stm =  conn.prepareStatement(compileResult.statement());
-        ResultSet rs = stm.executeQuery();
+        PreparedStatement prepare =  conn.prepareStatement(compileResult.statement());
+        int count = 1;
+        for (var binding : compileResult.bindings()) {
+            prepare.setObject(count++, binding.value());
+        }
+
+        ResultSet rs = prepare.executeQuery();
 
         while (rs.next()) {
             Map<String, Object> rowData = new HashMap<>();

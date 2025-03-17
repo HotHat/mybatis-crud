@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @TableName("users")
 public class UserBean {
     @TableKey(type = KeyType.AUTO)
-    long id;
+    int id;
     String username;
     String password;
     Integer gender;
@@ -21,11 +21,11 @@ public class UserBean {
     @TableColumn("updated_at")
     LocalDateTime updatedAt;
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 

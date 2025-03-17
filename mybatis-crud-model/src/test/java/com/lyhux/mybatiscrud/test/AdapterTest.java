@@ -115,6 +115,23 @@ public class AdapterTest {
     }
 
     @Test
+    public void testSelectQualifier() throws Exception {
+
+        var adapter = new SelectAdapter(conn, new MysqlGrammar());
+        var lst = adapter
+            .qualifier(UserBean.class)
+            .from("users")
+            .getQualifier();
+
+        for (var item : lst) {
+            UserBean bean = (UserBean) item;
+            System.out.printf("UserBean: %s, %s\n", bean.getId(), bean.getUsername());
+        }
+        // System.out.println(lst);
+    }
+
+
+    @Test
     public void testTransaction() throws SQLException {
         var db = new Database(conn, new MysqlGrammar());
         db.beginTransaction();

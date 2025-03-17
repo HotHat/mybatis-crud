@@ -26,7 +26,7 @@ import java.util.Map;
 public class DatabaseTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "";
+    static final String PASSWORD = "123456";
 
     @Test
     public void testBuilder() {

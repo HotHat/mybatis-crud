@@ -47,6 +47,25 @@ public class BeanFactory {
        return (T)byteBuddyCache.generateCachedType(clazz, clazzProxyName).getDeclaredConstructor().newInstance();
     }
 
+    public static<T> T mapToProxyBean(Map<String, Object>map, Class<T>clazz) {
+        try {
+            var meta = BeanFactory.getMetaInfo(clazz);
+            T  proxy  = BeanFactory.getProxyBean(clazz);
+            var newMap =  new HashMap<String, Object>();
+            for (var entry : meta.getFieldColumnMap().entrySet()) {
+                newMap.put(entry.getKey(), map.getOrDefault(entry.getValue(), null));
+            }
+
+            BeanMapUtil.mapToProxyBean(newMap, proxy, clazz);
+            BeanFactory.setOriginalValue(proxy, newMap);
+
+            return proxy;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public static<T> void setOriginalValue(T bean, Map<String, Object> originalValue)
         throws NoSuchFieldException, IllegalAccessException {
         Field field = bean.getClass().getDeclaredField(originalValueKey);

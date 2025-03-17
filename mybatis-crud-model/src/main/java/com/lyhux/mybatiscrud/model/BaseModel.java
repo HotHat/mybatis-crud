@@ -1,6 +1,7 @@
 package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.bean.BeanFactory;
+import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.bean.annotation.KeyType;
 
 import java.beans.IntrospectionException;
@@ -112,10 +113,18 @@ public class BaseModel<T> implements Model<T> {
             .where((wrapper) -> {
                 wrapper.where(info.getTableKey(), id);
             })
-            .first(beanType)
+            .first()
         ;
+        if (opt.isPresent()) {
+            var map = opt.get();
+            var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
 
-        return opt.map(bean -> (T) bean);
+            return Optional.of(proxy);
+        } else {
+            return Optional.empty();
+        }
+
+        // return opt.map(bean -> (T) bean);
     }
 
     public Class<?> getBeanType() {

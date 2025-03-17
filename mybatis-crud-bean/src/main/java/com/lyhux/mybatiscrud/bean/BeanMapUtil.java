@@ -26,7 +26,41 @@ public class BeanMapUtil {
      */
     public static <T> T mapToBean(Map<String, ?> map, Class<T> beanClass) throws Exception {
         T object = beanClass.getDeclaredConstructor().newInstance();
+        return BeanMapUtil.mapToBean(map,object);
+    }
+
+    public static <T> T mapToProxyBean(Map<String, ?> map, T proxy, Class<T> beanClass) throws Exception {
         Field[] fields = beanClass.getDeclaredFields();
+        for (Field field : fields) {
+            int mod = field.getModifiers();
+            if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
+                continue;
+            }
+            field.setAccessible(true);
+            if (map.containsKey(field.getName())) {
+                var value = map.get(field.getName());
+                if (value != null) {
+                    // type equal
+                    if (   (field.getType().getName().equals("int") && value instanceof Integer)
+                        || (field.getType().getName().equals("long") && value instanceof Long)
+                        || (field.getType().getName().equals("float") && value instanceof Float)
+                        || (field.getType().getName().equals("double") && value instanceof Double)
+                        || (field.getType().getName().equals("boolean") && value instanceof Boolean)
+                        || (field.getType().getName().equals("byte") && value instanceof Byte)
+                        || (field.getType().getName().equals("short") && value instanceof Short)
+                        || (field.getType().getName().equals("char") && value instanceof Character)
+                        || (field.getType().getName().equals(value.getClass().getName()) )
+                    ) {
+                        field.set(proxy, map.get(field.getName()));
+                    }
+                }
+            }
+        }
+        return proxy;
+    }
+
+    public static <T> T mapToBean(Map<String, ?> map, T object) throws Exception {
+        Field[] fields = object.getClass().getDeclaredFields();
         for (Field field : fields) {
             int mod = field.getModifiers();
             if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {

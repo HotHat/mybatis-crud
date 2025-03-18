@@ -85,6 +85,11 @@ public final class WhereExpr implements WhereClauseExpr {
         return where(column, "=", TypeValue.of(JDBCType.DECIMAL, value));
     }
 
+    public WhereExpr where(String column, Object value) {
+        return where(column, "=", TypeValue.of(value));
+    }
+
+
     // orWhere column = value group
     public WhereExpr orWhere(String column, String value) {
         return orWhere(column, "=", TypeValue.of(JDBCType.VARCHAR, value));

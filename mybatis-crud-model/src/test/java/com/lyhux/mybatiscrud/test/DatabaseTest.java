@@ -106,7 +106,7 @@ public class DatabaseTest {
         bean.setEmail("model@lyhux.com");
         bean.setGender(1);
         bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
-        bean.setUpdatedAt(LocalDateTime.now());
+        bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         var manager = DatabaseManager.getInstance();
         var insertQuery = manager.insertQuery();
@@ -193,13 +193,13 @@ public class DatabaseTest {
         DatabaseManager.initManager(conn, new MysqlGrammar());
 
         UserBean bean = new UserBean();
-        bean.setId(21);
+        bean.setId(21L);
         bean.setUsername("user_model");
         bean.setPassword("password11");
         bean.setEmail("model@lyhux.com");
         bean.setGender(1);
         bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
-        bean.setUpdatedAt(LocalDateTime.now());
+        bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         var userModel = new UserModel();
 
@@ -215,9 +215,20 @@ public class DatabaseTest {
         DatabaseManager.initManager(conn, new MysqlGrammar());
         var userModel = new UserModel();
 
-        var user = userModel.findById(9);
-        System.out.printf("bean after findById: %s\n", user);
+        var opt = userModel.findById(9);
+        System.out.printf("bean after findById: %s\n", opt);
+
+        if (opt.isPresent()) {
+            var user = opt.get();
+            user.setUsername("update test");
+            user.setEmail("13323@qq.com");
+
+            userModel.update(user);
+        }
+
 
     }
+
+
 
 }

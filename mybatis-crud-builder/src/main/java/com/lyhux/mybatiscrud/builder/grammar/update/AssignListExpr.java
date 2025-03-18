@@ -80,6 +80,11 @@ public class AssignListExpr implements Expr {
         return this;
     }
 
+    public AssignListExpr set(String column, Object value) {
+        set(new AssignExpr<>(new EscapedStr(column), new BindingValue<>(new RawStr("?"), TypeValue.of(value))));
+        return this;
+    }
+
     public AssignListExpr setNull(String column) {
         set(new AssignExpr<>(new EscapedStr(column), new BindingValue<>(new RawStr("?"), TypeValue.of())));
         return this;

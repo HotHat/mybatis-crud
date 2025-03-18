@@ -18,7 +18,7 @@ public class ModelTest {
         bean.setEmail("model@lyhux.com");
         bean.setGender(1);
         bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
-        bean.setUpdatedAt(LocalDateTime.now());
+        bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         model.insert(bean);
 

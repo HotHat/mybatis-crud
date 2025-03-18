@@ -9,10 +9,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class BaseModel<T> implements Model<T> {
     public void insert(T bean) {
@@ -94,7 +91,69 @@ public class BaseModel<T> implements Model<T> {
 
     }
 
-    public void update(T bean) {}
+    public void update(T bean) {
+        var metaInfo = BeanFactory.getMetaInfo(getBeanType());
+
+        var original = BeanFactory.getOriginalValue(bean);
+
+        Map<String, Object> updateData = new HashMap<>();
+
+
+        var manager = DatabaseManager.getInstance();
+        var updateQuery = manager.updateQuery();
+
+
+        var query = updateQuery
+            .table(metaInfo.getTableName());
+
+        try {
+            if (original != null) {
+                for (Map.Entry<String, String> entry : metaInfo.getFieldColumnMap().entrySet()) {
+                    String key = entry.getKey();
+                    String col = entry.getValue();
+                    // String value = entry.get(key);
+                    if (!key.equals(metaInfo.getTableKey())) {
+                        Object old = original.get(key);
+                        Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                        Object val = getter.invoke(bean);
+                        if (old != val
+                            && ((val != null && !val.equals(old)) || !old.equals(val))) {
+                            updateData.put(col, val);
+                        }
+                    }
+                }
+            } else {
+                for (Map.Entry<String, String> entry : metaInfo.getFieldColumnMap().entrySet()) {
+                    String key = entry.getValue();
+
+                    Method getter = new PropertyDescriptor(metaInfo.getTableKey(), bean.getClass()).getReadMethod();
+                    Object val = getter.invoke(bean);
+                    updateData.put(key, val);
+                }
+            }
+
+            //
+            if (!updateData.isEmpty()) {
+                for (Map.Entry<String, Object> entry : updateData.entrySet()) {
+                    query.set((wrapper) -> {
+                        wrapper.set(entry.getKey(), entry.getValue());
+                    });
+                }
+
+                Method getter = new PropertyDescriptor(metaInfo.getTableKey(), bean.getClass()).getReadMethod();
+                Object val = getter.invoke(bean);
+
+                query.where(wrapper -> {
+                        wrapper.where(metaInfo.getTableKey(), val);
+                    })
+                    .update();
+            }
+
+        } catch (IntrospectionException | InvocationTargetException | IllegalAccessException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void delete(T bean) {}
 
     public Optional<T> findById(Long id) {

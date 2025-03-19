@@ -154,13 +154,30 @@ public class BaseModel<T> implements Model<T> {
         }
     }
 
-    public void delete(T bean) {}
+    public Long delete(T bean) {
+        var metaInfo = BeanFactory.getMetaInfo(getBeanType());
 
-    public Optional<T> findById(Long id) {
-        return Optional.empty();
+        var manager = DatabaseManager.getInstance();
+        var deleteQuery = manager.deleteQuery();
+
+        var query = deleteQuery
+            .table(metaInfo.getTableName());
+
+        try {
+            Method getter = new PropertyDescriptor(metaInfo.getTableKey(), bean.getClass()).getReadMethod();
+            Object val = getter.invoke(bean);
+
+            return query.where(wrapper -> {
+                    wrapper.where(metaInfo.getTableKey(), val);
+                })
+                .delete();
+
+        } catch (IntrospectionException | InvocationTargetException | IllegalAccessException | SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public Optional<T> findById(Integer id) throws Exception {
+    public Optional<T> findById(Object id) throws Exception {
         var beanType = getBeanType();
 
         var info = BeanFactory.getMetaInfo(beanType);
@@ -182,8 +199,6 @@ public class BaseModel<T> implements Model<T> {
         } else {
             return Optional.empty();
         }
-
-        // return opt.map(bean -> (T) bean);
     }
 
     public Class<?> getBeanType() {

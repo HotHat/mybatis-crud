@@ -206,6 +206,7 @@ public class DatabaseTest {
         System.out.printf("bean before insert %s\n", bean);
         userModel.insert(bean);
 
+
         System.out.printf("bean after insert: %s\n", bean);
     }
 
@@ -225,6 +226,22 @@ public class DatabaseTest {
 
             userModel.update(user);
         }
+    }
+
+    private void initDb() throws SQLException {
+        Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        DatabaseManager.initManager(conn, new MysqlGrammar());
+    }
+
+    @Test
+    public void testUserModelFindAll() throws Exception {
+        initDb();
+        var userModel = new UserModel();
+
+        UserBean bean = new UserBean();
+        bean.setId(21L);
+        long count = userModel.delete(bean);
+        System.out.printf("delete count: %s\n", count);
 
 
     }

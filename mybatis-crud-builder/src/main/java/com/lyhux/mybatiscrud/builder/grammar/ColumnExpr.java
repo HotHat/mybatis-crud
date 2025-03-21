@@ -1,12 +1,9 @@
-package com.lyhux.mybatiscrud.builder.grammar.select;
-
-import com.lyhux.mybatiscrud.builder.grammar.Expr;
-import com.lyhux.mybatiscrud.builder.grammar.ExprStr;
+package com.lyhux.mybatiscrud.builder.grammar;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectExpr implements Expr {
+public class ColumnExpr implements Expr {
     List<ExprStr> select;
 
     public List<ExprStr> getSelect() {
@@ -15,7 +12,7 @@ public class SelectExpr implements Expr {
 
     public boolean isEmpty() { return select.isEmpty(); }
 
-    public SelectExpr add(ExprStr expr) {
+    public ColumnExpr add(ExprStr expr) {
         select.add(expr);
         return this;
     }
@@ -24,11 +21,11 @@ public class SelectExpr implements Expr {
         this.select.addAll(fields);
     }
 
-    public SelectExpr() {
+    public ColumnExpr() {
         select = new ArrayList<ExprStr>();
     }
 
-    public SelectExpr(List<ExprStr> select) {
+    public ColumnExpr(List<ExprStr> select) {
         this.select = select;
     }
 }

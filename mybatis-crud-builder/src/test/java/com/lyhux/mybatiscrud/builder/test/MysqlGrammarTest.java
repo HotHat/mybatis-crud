@@ -2,7 +2,6 @@ package com.lyhux.mybatiscrud.builder.test;
 
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.*;
-import com.lyhux.mybatiscrud.builder.grammar.update.*;
 import com.lyhux.mybatiscrud.builder.grammar.select.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
@@ -17,7 +16,7 @@ public class MysqlGrammarTest {
         grammar = new MysqlGrammar();
     }
 
-    public void print(SelectExpr expr) {
+    public void print(ColumnExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
@@ -96,10 +95,10 @@ public class MysqlGrammarTest {
     }
 
     // insert statements
-    public void print(ColumnExpr expr) {
-        var result = grammar.compile(expr);
-        System.out.println(result);
-    }
+    // public void print(ColumnExpr1 expr) {
+    //     var result = grammar.compile(expr);
+    //     System.out.println(result);
+    // }
 
     public void print(ValueGroupExpr stmt) {
         var result = grammar.compile(stmt);

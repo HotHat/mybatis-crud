@@ -1,12 +1,12 @@
 package com.lyhux.mybatiscrud.builder.vendor;
 
+import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
-import com.lyhux.mybatiscrud.builder.grammar.select.SelectExpr;
+import com.lyhux.mybatiscrud.builder.grammar.ColumnExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ColumnExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 
 import java.util.ArrayList;
@@ -162,7 +162,7 @@ public class MysqlGrammar implements Grammar {
     }
 
 
-    public String compile(SelectExpr expr) {
+    public String compile(ColumnExpr expr) {
         var sb = new StringBuilder();
         int count = 0;
         var selects = expr.getSelect();
@@ -431,16 +431,16 @@ public class MysqlGrammar implements Grammar {
     }
 
     // insert statements
-    public String compile(ColumnExpr expr) {
-        var sb = new StringBuilder();
-        var columns = expr.getColumns();
-        int count = 0;
-        for (var exp : columns) {
-            sb.append(compile(exp));
-            if (++count < columns.size()) { sb.append(", "); }
-        }
-        return sb.toString();
-    }
+    // public String compile(ColumnExpr1 expr) {
+    //     var sb = new StringBuilder();
+    //     var columns = expr.getColumns();
+    //     int count = 0;
+    //     for (var exp : columns) {
+    //         sb.append(compile(exp));
+    //         if (++count < columns.size()) { sb.append(", "); }
+    //     }
+    //     return sb.toString();
+    // }
 
     public ExprResult compile(ValueGroupExpr expr) {
         var sb = new StringBuilder();
@@ -625,6 +625,7 @@ public class MysqlGrammar implements Grammar {
             case InsertStmt insert -> compile(insert);
             case UpdateStmt update -> compile(update);
             case DeleteStmt delete -> compile(delete);
+            case QueryBuilder query -> null;
         };
     }
 }

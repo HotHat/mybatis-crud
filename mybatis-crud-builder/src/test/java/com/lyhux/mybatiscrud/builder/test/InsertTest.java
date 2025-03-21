@@ -3,7 +3,6 @@ package com.lyhux.mybatiscrud.builder.test;
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ColumnExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 import org.junit.jupiter.api.Test;
 

@@ -2,21 +2,21 @@ package com.lyhux.mybatiscrud.builder.test;
 
 import com.lyhux.mybatiscrud.builder.grammar.EscapedStr;
 import com.lyhux.mybatiscrud.builder.grammar.RawStr;
-import com.lyhux.mybatiscrud.builder.grammar.select.SelectExpr;
+import com.lyhux.mybatiscrud.builder.grammar.ColumnExpr;
 import org.junit.jupiter.api.Test;
 
 public class SelectExprTest extends MysqlGrammarTest {
 
     @Test
     public void testEmptySelectExpr() {
-        var expr = new SelectExpr();
+        var expr = new ColumnExpr();
 
         print(expr);
     }
 
     @Test
     public void testSelectExpr() {
-        var expr = new SelectExpr();
+        var expr = new ColumnExpr();
         expr.add(new RawStr("version()"))
                 .add(new EscapedStr("id AS user_id"))
                 .add(new EscapedStr("orders.id AS order_id"))

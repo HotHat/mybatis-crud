@@ -2,6 +2,7 @@ package com.lyhux.mybatiscrud.test;
 
 import com.lyhux.mybatiscrud.bean.BeanFactory;
 import com.lyhux.mybatiscrud.bean.annotation.KeyType;
+import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
 import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import com.lyhux.mybatiscrud.model.Database;
@@ -29,12 +30,12 @@ public class DatabaseTest {
     static final String PASSWORD = "123456";
 
     @Test
-    public void testBuilder() {
+    public void testBuilder() throws Exception {
         var db = new Database(null, new MysqlGrammar());
         var test1 = true;
         var test2 = false;
 
-        var selector = db.selectQuery()
+        var selector = new QueryBuilder()
             .select()
             .from("users")
             .select("id", "username", "age")
@@ -52,7 +53,7 @@ public class DatabaseTest {
 
         ;
 
-        var result = selector.select();
+        var result = db.adapter().query(selector).get();
 
         // selector.replaceSelect()
         //     .selectRaw("count(*) as aggregate");
@@ -109,7 +110,7 @@ public class DatabaseTest {
         bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
         var manager = DatabaseManager.getInstance();
-        var insertQuery = manager.insertQuery();
+        var insertQuery = manager.adapter();
 
         // get columns
         ArrayList<String> columns = new ArrayList<>();
@@ -142,24 +143,29 @@ public class DatabaseTest {
             }
 
             Long primaryKey = insertQuery
-                .table(info.getTableName())
-                .columns(columns.toArray(new String[0]))
-                .values((wrapper) -> {
-                    try {
-                        for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
-                            String key = entry.getKey();
-                            String value = entry.getValue();
-                            if (columns.contains(value)) {
-                                Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
-                                // Class<?> type = getter.getReturnType();
-                                Object val = getter.invoke(bean);
-                                wrapper.add(val);
+                .query(query -> {
+                    query
+                        .table(info.getTableName())
+                        .columns(columns.toArray(new String[0]))
+                        .values((wrapper) -> {
+                            try {
+                                for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
+                                    String key = entry.getKey();
+                                    String value = entry.getValue();
+                                    if (columns.contains(value)) {
+                                        Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                                        // Class<?> type = getter.getReturnType();
+                                        Object val = getter.invoke(bean);
+                                        wrapper.add(val);
+                                    }
+                                }
+                            } catch (Exception  e) {
+                                throw new RuntimeException(e);
                             }
-                        }
-                    } catch (Exception  e) {
-                        throw new RuntimeException(e);
-                    }
+                        })
+                        ;
                 })
+
                 .insertGetId()
                 ;
 

@@ -124,12 +124,14 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
 
     @Test
     public void testWhereExists() {
-        var orders = new SelectStmt();
-        orders.selectRaw("1")
-              .from("orders")
-              .where((query) -> {
-                  query.whereColumn("orders.user_id", "users.id");
-              });
+        // var orders = new SelectStmt();
+        var orders = new QueryBuilder()
+            .selectRaw("1")
+            .from("orders")
+            .where((query) -> {
+                query.whereColumn("orders.user_id", "users.id");
+            })
+            .toSelectStmt();
 
         var expr = new WhereExpr();
         expr.whereExists(orders);

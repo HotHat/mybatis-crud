@@ -1,12 +1,13 @@
 package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
 import com.lyhux.mybatiscrud.builder.grammar.SelectStmt;
 import org.junit.jupiter.api.Test;
 
 public class SelectStmtTest extends MysqlGrammarTest {
     @Test
     public void testSimple() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
         builder.select("*")
                 .from("users")
@@ -17,28 +18,27 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testSubQuery() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
-        var table = new SelectStmt();
-        table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
+        var table = new QueryBuilder().select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
-                .from(table, "tb1")
+                .from(table.toSelectStmt(), "tb1")
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testJoin() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -46,13 +46,13 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testJoin2() {
 
-        var selector = new SelectStmt();
+        var selector = new QueryBuilder();
 
         selector.select("*")
                .from("users")
@@ -63,25 +63,25 @@ public class SelectStmtTest extends MysqlGrammarTest {
                })
         ;
 
-        print(selector);
+        print(selector.toSelectStmt());
     }
 
     @Test
     public void testJoinSub() {
-        var latestPosts = new SelectStmt().from("posts")
+        var latestPosts = new QueryBuilder().from("posts")
                                           .select("user_id")
                                           .where((query) -> {
                                               query.where("is_published", 1);
                                           })
                                           .groupBy("user_id");
 
-        var selector = new SelectStmt();
+        var selector = new QueryBuilder();
 
         selector.from("users")
-                .joinSub(latestPosts, "latest_posts", (join) -> {
+                .joinSub(latestPosts.toSelectStmt(), "latest_posts", (join) -> {
                     join.on("users.id", "=", "latest_posts.user_id");
                 })
-                .joinSub(latestPosts, "latest_posts", (join) -> {
+                .joinSub(latestPosts.toSelectStmt(), "latest_posts", (join) -> {
                     join.on("users.id", "=", "latest_posts.user_id");
                 })
             .where((query) -> {
@@ -89,14 +89,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
             })
         ;
 
-        print(selector);
+        print(selector.toSelectStmt());
     }
 
     @Test
     public void testLeftJoin() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -104,14 +104,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .leftJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testRightJoin() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -120,14 +120,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .rightJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testSubQueryWithJoin() {
-        var builder = new SelectStmt();
+        var builder = new QueryBuilder();
 
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -135,12 +135,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder);
+        print(builder.toSelectStmt());
     }
 
     @Test
     public void testGroupBy() {
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table
                 .from("users")
                 .where((query) -> { query.where("id", ">", 123);})
@@ -150,12 +150,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        print(table);
+        print(table.toSelectStmt());
     }
 
     @Test
     public void testOrderBy() {
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table
                 .from("users")
                 .where((query) -> { query.where("id", ">", 123);})
@@ -164,21 +164,21 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         ;
 
-        print(table);
+        print(table.toSelectStmt());
     }
 
     @Test
     public void testLimit() {
-        var table = new SelectStmt();
+        var table = new QueryBuilder();
         table
                 .from("users")
                 .orderBy("name", "asc")
                 .limit(10)
         ;
 
-        print(table);
+        print(table.toSelectStmt());
 
-        var table1 = new SelectStmt();
+        var table1 = new QueryBuilder();
         table1
                 .select("user.id", "user.name", "orders.id AS order_id")
                 .selectRaw("orders.no AS order_no")
@@ -188,30 +188,30 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .limit(10, 5)
         ;
 
-        print(table1);
+        print(table1.toSelectStmt());
     }
 
     @Test
     public void testWhereExists() {
-        var orders = new SelectStmt();
+        var orders = new QueryBuilder() ;
         orders.selectRaw("1")
                 .from("orders")
                 .where((query) -> {
                     query.whereColumn("orders.user_id",  "users.id");
                 });
 
-        var users = new SelectStmt();
+        var users = new QueryBuilder();
         users.from("users")
                 .where((query) -> {
                     query.whereExists(orders);
                 });
 
-        print(users);
+        print(users.toSelectStmt());
     }
 
     @Test
     public void testUnion() {
-        var order1 = new SelectStmt();
+        var order1 = new QueryBuilder();
         order1.selectRaw("1")
             .from("orders")
             .where((query) -> {
@@ -221,13 +221,13 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
             });
 
-        var order2 = new SelectStmt();
+        var order2 = new QueryBuilder();
         order2.from("users")
             .where((query) -> {
                 query.where("user_id", ">", 123);
             });
 
-        var order3 = new SelectStmt();
+        var order3 = new QueryBuilder();
         order3.from("users")
             .union(order1)
             .union(order2)
@@ -235,6 +235,6 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 query.where("user_id", ">", 123);
             });
 
-        print(order3);
+        print(order3.toSelectStmt());
     }
 }

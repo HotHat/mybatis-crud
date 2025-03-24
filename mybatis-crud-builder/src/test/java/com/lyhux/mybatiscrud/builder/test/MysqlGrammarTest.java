@@ -3,7 +3,7 @@ package com.lyhux.mybatiscrud.builder.test;
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.insert.*;
 import com.lyhux.mybatiscrud.builder.grammar.select.*;
-import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignListExpr;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -106,7 +106,7 @@ public class MysqlGrammarTest {
         System.out.println(result.bindings());
     }
 
-    public void print(AssignListExpr expr) {
+    public void print(DuplicateAssignListExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }

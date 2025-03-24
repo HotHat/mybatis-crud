@@ -1,5 +1,6 @@
 package com.lyhux.mybatiscrud.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import com.lyhux.mybatiscrud.model.*;
 import org.junit.jupiter.api.AfterEach;
@@ -36,10 +37,10 @@ public class AdapterTest {
 
     @Test
     public void testInsert() throws SQLException {
-        var adapter = new InsertAdapter(conn, new MysqlGrammar());
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
 
-        Long primaryKey = adapter
-               .table("users")
+        QueryBuilder builder = new QueryBuilder();
+        builder.table("users")
                .columns("username", "password", "gender", "email", "created_at", "updated_at")
                .values((group -> {
                    group
@@ -51,27 +52,56 @@ public class AdapterTest {
                        // .add(Timestamp.from(Instant.now()))
                        .addNull();
 
-               }))
+               }));
+
+        Long primaryKey = adapter
+            .query(builder)
             .insertGetId();
 
         System.out.printf("Inserted record: %s\n", primaryKey);
+
+        Long pk = adapter
+            .query((wrapper) -> {
+                wrapper.table("users")
+                       .columns("username", "password", "gender", "email", "created_at", "updated_at")
+                       .values((group -> {
+                           group
+                               .add("momo5")
+                               .add("123456")
+                               .add(2)
+                               .add("yaha2@gmail.com")
+                               .add(LocalDateTime.now())
+                               // .add(Timestamp.from(Instant.now()))
+                               .addNull();
+
+                       }));
+            })
+            .insertGetId();
+
+        System.out.printf("Inserted record: %s\n", pk);
     }
+
+
 
     @Test
     public void testUpdate() throws SQLException {
-        var adapter = new UpdateAdapter(conn, new MysqlGrammar());
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var rows = adapter
-            .table("users")
-            .set((wrapper) -> {
-                wrapper
-                    .set("username", "linux")
-                    .setRaw("email", "hello@gmail.com")
-                ;
+            .query(query -> {
+               query
+                    .table("users")
+                    .set((wrapper) -> {
+                        wrapper
+                            .set("username", "linux")
+                            .setRaw("email", "hello@gmail.com")
+                        ;
 
+                    })
+                    .where(wrapper -> {
+                        wrapper.where("id", ">", 1);
+                    });
             })
-            .where(wrapper -> {
-                wrapper.where("id", ">", 1);
-            })
+
             .update();
 
         System.out.printf("Updated record count: %s\n", rows);
@@ -80,12 +110,15 @@ public class AdapterTest {
 
     @Test
     public void testDelete() throws SQLException {
-        var adapter = new DeleteAdapter(conn, new MysqlGrammar());
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var rows = adapter
-            .table("users")
-            .where(wrapper -> {
-                wrapper.where("id", ">", 3);
+            .query(query -> {
+                query.table("users")
+                     .where(wrapper -> {
+                         wrapper.where("id", ">", 3);
+                     });
             })
+
             .delete();
 
         System.out.printf("Updated record count: %s\n", rows);
@@ -95,32 +128,33 @@ public class AdapterTest {
     @Test
     public void testSelect() throws Exception {
 
-        var adapter = new SelectAdapter(conn, new MysqlGrammar());
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var lst = adapter
-            .from("users")
+            .query(new QueryBuilder().from("users"))
             .get();
 
         System.out.println(lst);
 
-        adapter = new SelectAdapter(conn, new MysqlGrammar());
+        // adapter = new SelectAdapter(conn, new MysqlGrammar());
 
-        var user = adapter
-            .from("users")
-            .first();
+        // var user = adapter
+        //     .query(new QueryBuilder().from("users"))
+            // .from("users")
+            // .first();
 
         // var result = user.getQuery();
         // System.out.printf("Selected record: %s\n%s", result.statement(), result.bindings());
 
-        System.out.println(user);
+        // System.out.println(user);
     }
 
     @Test
     public void testSelectQualifier() throws Exception {
 
-        var adapter = new SelectAdapter(conn, new MysqlGrammar());
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var lst = adapter
             .qualifier(UserBean.class)
-            .from("users")
+            .query(new QueryBuilder().from("users"))
             .getQualifier();
 
         for (var item : lst) {
@@ -136,25 +170,32 @@ public class AdapterTest {
         var db = new Database(conn, new MysqlGrammar());
         db.beginTransaction();
 
-        var rowCount = db.updateQuery()
-               .table("users")
-               .set((wrapper) -> {
-                   wrapper.set("username", "tr1");
-               })
-               .where(wrapper -> {
-                   wrapper.where("id", 6);
-               }).update();
+        var rowCount = db.adapter()
+                         .query(query -> {
+                             query
+                                 .table("users")
+                                 .set((wrapper) -> {
+                                     wrapper.set("username", "tr1");
+                                 })
+                                 .where(wrapper -> {
+                                     wrapper.where("id", 6);
+                                 });
+                         })
+                         .update();
 
         System.out.printf("Updated record count: %s\n", rowCount);
 
-        rowCount = db.updateQuery()
-               .table("users")
-               .set((wrapper) -> {
-                   wrapper.set("username", "tr2");
-               })
-               .where(wrapper -> {
-                   wrapper.where("id", 7);
-               }).update();
+        rowCount = db.adapter()
+                     .query(query -> {
+                         query.table("users")
+                              .set((wrapper) -> {
+                                  wrapper.set("username", "tr2");
+                              })
+                              .where(wrapper -> {
+                                  wrapper.where("id", 7);
+                              });
+                     })
+                     .update();
         System.out.printf("Updated record count: %s\n", rowCount);
 
         db.commit();
@@ -170,25 +211,33 @@ public class AdapterTest {
             builder.beginTransaction();
                 // level rollback
                 builder.beginTransaction();
-        var rowCount = builder.updateQuery()
-                          .table("users")
-                          .set((wrapper) -> {
-                              wrapper.set("username", "rollback");
-                          })
-                          .where(wrapper -> {
-                              wrapper.where("id", 8);
-                          }).update();
+        var rowCount = builder.adapter()
+                              .query(query -> {
+                                  query
+                                      .table("users")
+                                      .set((wrapper) -> {
+                                          wrapper.set("username", "rollback");
+                                      })
+                                      .where(wrapper -> {
+                                          wrapper.where("id", 8);
+                                      });
+                              })
+                              .update();
         System.out.printf("transaction rollback count: %s\n", rowCount);
 
                 builder.rollback();
-        rowCount = builder.updateQuery()
-                          .table("users")
-                          .set((wrapper) -> {
-                              wrapper.set("username", "commit");
+        rowCount = builder.adapter()
+                          .query(query -> {
+                              query
+                                  .table("users")
+                                  .set((wrapper) -> {
+                                      wrapper.set("username", "commit");
+                                  })
+                                  .where(wrapper -> {
+                                      wrapper.where("id", 9);
+                                  });
                           })
-                          .where(wrapper -> {
-                              wrapper.where("id", 9);
-                          }).update();
+                          .update();
         System.out.printf("transaction commit count: %s\n", rowCount);
 
             builder.commit();
@@ -197,32 +246,36 @@ public class AdapterTest {
         builder.commit();
 
         // after transaction
-        rowCount = builder.updateQuery()
-                          .table("users")
-                          .set((wrapper) -> {
-                              wrapper.set("username", "commit");
+        rowCount = builder.adapter()
+                          .query(query -> {
+                              query.table("users")
+                                   .set((wrapper) -> {
+                                       wrapper.set("username", "commit");
+                                   })
+                                   .where(wrapper -> {
+                                       wrapper.where("id", 6);
+                                   });
                           })
-                          .where(wrapper -> {
-                              wrapper.where("id", 6);
-                          }).update();
+                          .update();
         System.out.printf("auto commit count: %s\n", rowCount);
     }
 
     @Test
     public void testGetMapToBean() throws Exception {
         var db = new Database(conn, new MysqlGrammar());
-        var selector = db.selectQuery();
+        var selector = db.adapter();
 
         var lst = selector
-            .from("users")
+            .query(new QueryBuilder().from("users"))
+            // .from("users")
             .get(UserBean.class);
 
         for (var row : lst) {
             System.out.println(row);
         }
 
-        var user = db.selectQuery()
-            .from("users")
+        var user = db.adapter().query(new QueryBuilder().from("users"))
+            // .from("users")
             .first(UserBean.class);
 
         System.out.printf("user: %s\n", user);

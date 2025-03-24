@@ -20,20 +20,8 @@ public class Database {
         transactLevel = 0;
     }
 
-    public SelectAdapter selectQuery(){
-        return new SelectAdapter(conn, grammar);
-    }
-
-    public InsertAdapter insertQuery(){
-        return new InsertAdapter(conn, grammar);
-    }
-
-    public DeleteAdapter deleteQuery(){
-        return new DeleteAdapter(conn, grammar);
-    }
-
-    public UpdateAdapter updateQuery(){
-        return new UpdateAdapter(conn, grammar);
+    public QueryAdapter adapter(){
+        return new QueryAdapter(conn, grammar);
     }
 
     public void beginTransaction() throws SQLException {

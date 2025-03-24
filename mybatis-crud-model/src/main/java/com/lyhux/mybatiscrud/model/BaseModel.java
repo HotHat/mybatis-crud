@@ -3,6 +3,7 @@ package com.lyhux.mybatiscrud.model;
 import com.lyhux.mybatiscrud.bean.BeanFactory;
 import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.bean.annotation.KeyType;
+import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -19,7 +20,7 @@ public class BaseModel<T> implements Model<T> {
         // System.out.printf("table mate info: %s\n",  info);
 
         var manager = DatabaseManager.getInstance();
-        var insertQuery = manager.insertQuery();
+        var insertQuery = manager.adapter();
 
         // get columns
         ArrayList<String> columns = new ArrayList<>();
@@ -52,24 +53,28 @@ public class BaseModel<T> implements Model<T> {
             }
 
             var query = insertQuery
-                .table(info.getTableName())
-                .columns(columns.toArray(new String[0]))
-                .values((wrapper) -> {
-                    try {
-                        for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
-                            String key = entry.getKey();
-                            String value = entry.getValue();
-                            if (columns.contains(value)) {
-                                Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
-                                // Class<?> type = getter.getReturnType();
-                                Object val = getter.invoke(bean);
-                                wrapper.add(val);
+                .query(builder -> {
+                    builder
+                        .table(info.getTableName())
+                        .columns(columns.toArray(new String[0]))
+                        .values((wrapper) -> {
+                            try {
+                                for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
+                                    String key = entry.getKey();
+                                    String value = entry.getValue();
+                                    if (columns.contains(value)) {
+                                        Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                                        // Class<?> type = getter.getReturnType();
+                                        Object val = getter.invoke(bean);
+                                        wrapper.add(val);
+                                    }
+                                }
+                            } catch (Exception  e) {
+                                throw new RuntimeException(e);
                             }
-                        }
-                    } catch (Exception  e) {
-                        throw new RuntimeException(e);
-                    }
+                        });
                 });
+
 
             if ((info.isPrimaryKeyInteger() || info.isPrimaryKeyLong()) && info.getKeyType() == KeyType.AUTO) {
                 Long primaryKey = query.insertGetId();
@@ -100,10 +105,10 @@ public class BaseModel<T> implements Model<T> {
 
 
         var manager = DatabaseManager.getInstance();
-        var updateQuery = manager.updateQuery();
+        var updateQuery = manager.adapter();
 
 
-        var query = updateQuery
+        var query = new QueryBuilder()
             .table(metaInfo.getTableName());
 
         try {
@@ -145,8 +150,9 @@ public class BaseModel<T> implements Model<T> {
 
                 query.where(wrapper -> {
                         wrapper.where(metaInfo.getTableKey(), val);
-                    })
-                    .update();
+                    });
+                //
+                updateQuery.query(query).update();
             }
 
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException | SQLException e) {
@@ -158,19 +164,20 @@ public class BaseModel<T> implements Model<T> {
         var metaInfo = BeanFactory.getMetaInfo(getBeanType());
 
         var manager = DatabaseManager.getInstance();
-        var deleteQuery = manager.deleteQuery();
+        var deleteQuery = manager.adapter();
 
-        var query = deleteQuery
+        var query = new QueryBuilder()
             .table(metaInfo.getTableName());
 
         try {
             Method getter = new PropertyDescriptor(metaInfo.getTableKey(), bean.getClass()).getReadMethod();
             Object val = getter.invoke(bean);
 
-            return query.where(wrapper -> {
+            query.where(wrapper -> {
                     wrapper.where(metaInfo.getTableKey(), val);
-                })
-                .delete();
+                });
+
+            return deleteQuery.query(query).delete();
 
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException | SQLException e) {
             throw new RuntimeException(e);
@@ -183,14 +190,17 @@ public class BaseModel<T> implements Model<T> {
         var info = BeanFactory.getMetaInfo(beanType);
 
         var manager = DatabaseManager.getInstance();
-        var selectQuery = manager.selectQuery();
-        var opt = selectQuery
-            .table(info.getTableName())
-            .where((wrapper) -> {
-                wrapper.where(info.getTableKey(), id);
+        var selectQuery = manager.adapter();
+        var opt =  selectQuery
+            .query(query -> {
+                query
+                    .table(info.getTableName())
+                    .where((wrapper) -> {
+                        wrapper.where(info.getTableKey(), id);
+                    });
             })
-            .first()
-        ;
+            .first();
+
         if (opt.isPresent()) {
             var map = opt.get();
             var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);

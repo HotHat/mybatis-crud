@@ -5,8 +5,8 @@ import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
 import com.lyhux.mybatiscrud.builder.grammar.ColumnExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.AssignExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 
 import java.util.ArrayList;
@@ -246,8 +246,8 @@ public class MysqlGrammar implements Grammar {
     public ExprResult compile(TableSubExpr expr) {
         var sb = new StringBuilder();
 
-        var subTable = expr.getSelectStmt();
-        var alias = expr.getAlias();
+        var subTable = expr.selectStmt();
+        var alias = expr.alias();
 
         var result = compile(subTable);
         sb.append("(").append(result.statement()).append(")");
@@ -295,13 +295,13 @@ public class MysqlGrammar implements Grammar {
     public ExprResult compile(SelectStmt stmt) {
         var sb = new StringBuilder();
 
-        var selectExpr = stmt.getSelectExpr();
-        var tableRefs = stmt.getTableRefsExpr();
-        var whereExpr = stmt.getWhereExpr();
-        var groupByExpr = stmt.getGroupByExpr();
-        var orderByExpr = stmt.getOrderByExpr();
-        var limitExpr = stmt.getLimitExpr();
-        var unionClause = stmt.getUnionClause();
+        var selectExpr = stmt.select();
+        var tableRefs = stmt.tableRefs();
+        var whereExpr = stmt.where();
+        var groupByExpr = stmt.groupBy();
+        var orderByExpr = stmt.orderBy();
+        var limitExpr = stmt.limit();
+        var unionClause = stmt.union();
 
         // union bracket
         if (!unionClause.getUnionItems().isEmpty()) {
@@ -460,11 +460,11 @@ public class MysqlGrammar implements Grammar {
         return new ExprResult(sb.toString(), bindings);
     }
 
-    public String compile(AssignExpr expr) {
+    public String compile(DuplicateAssignExpr expr) {
         return compile(expr.column()) + '=' + compile(expr.value());
     }
 
-    public String compile(AssignListExpr expr) {
+    public String compile(DuplicateAssignListExpr expr) {
         var sb = new StringBuilder();
         var assigns = expr.getAssignExpr();
         int count = 0;
@@ -506,13 +506,13 @@ public class MysqlGrammar implements Grammar {
         var sb = new StringBuilder();
         var bindings = new ArrayList<TypeValue<?>>();
 
-        var tableName = stmt.getTableName();
-        var columns = stmt.getColumns();
-        var values = stmt.getValues();
-        var assigns = stmt.getAssigns();
+        var tableRef = stmt.tableRef();
+        var columns = stmt.columns();
+        var values = stmt.values();
+        var assigns = stmt.assigns();
 
         sb.append("INSERT INTO ");
-        sb.append(compile(tableName));
+        sb.append(compile(tableRef));
         //
         if (!columns.isEmpty()) {
             sb.append(" (");
@@ -544,11 +544,11 @@ public class MysqlGrammar implements Grammar {
     public ExprResult compile(UpdateStmt stmt) {
         var sb = new StringBuilder();
 
-        var tableRef = stmt.getTableRef();
-        var assigns = stmt.getAssignments();
-        var whereExpr = stmt.getWhereExpr();
-        var orderBy = stmt.getOrderBy();
-        var limit = stmt.getLimit();
+        var tableRef = stmt.table();
+        var assigns = stmt.assignments();
+        var whereExpr = stmt.where();
+        var orderBy = stmt.orderBy();
+        var limit = stmt.limit();
 
         sb.append("UPDATE ");
         var result = compile(tableRef);
@@ -587,10 +587,10 @@ public class MysqlGrammar implements Grammar {
     public ExprResult compile(DeleteStmt stmt) {
         var sb = new StringBuilder();
 
-        var tableRef = stmt.getTableRef();
-        var whereExpr = stmt.getWhereExpr();
-        var orderBy = stmt.getOrderBy();
-        var limit = stmt.getLimit();
+        var tableRef = stmt.table();
+        var whereExpr = stmt.where();
+        var orderBy = stmt.orderBy();
+        var limit = stmt.limit();
 
         sb.append("DELETE FROM ");
         var result = compile(tableRef);
@@ -625,7 +625,6 @@ public class MysqlGrammar implements Grammar {
             case InsertStmt insert -> compile(insert);
             case UpdateStmt update -> compile(update);
             case DeleteStmt delete -> compile(delete);
-            case QueryBuilder query -> null;
         };
     }
 }

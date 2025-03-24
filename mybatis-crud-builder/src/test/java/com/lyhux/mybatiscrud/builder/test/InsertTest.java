@@ -1,8 +1,8 @@
 package com.lyhux.mybatiscrud.builder.test;
 
 import com.lyhux.mybatiscrud.builder.grammar.*;
-import com.lyhux.mybatiscrud.builder.grammar.insert.AssignExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.AssignListExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 import org.junit.jupiter.api.Test;
 
@@ -45,18 +45,20 @@ public class InsertTest extends MysqlGrammarTest {
 
     @Test
     public void testAssignListExpr() {
-        var lst = new AssignListExpr();
+        var lst = new DuplicateAssignListExpr();
 
-        lst.add(new AssignExpr(new EscapedStr("name"), new EscapedStr("ab.name")));
-        lst.add(new AssignExpr(new EscapedStr("name2"), new EscapedStr("ab.name2")));
+        lst.add(new DuplicateAssignExpr(new EscapedStr("name"), new EscapedStr("ab.name")));
+        lst.add(new DuplicateAssignExpr(new EscapedStr("name2"), new EscapedStr("ab.name2")));
 
         print(lst);
     }
 
     @Test
     public void testInsertExpr() {
-        var insert = new InsertStmt(new EscapedStr("users"));
-        insert
+        var builder = new QueryBuilder();
+
+        // var insert = new InsertStmt(new EscapedStr("users"));
+        builder
                 .columns("id", "name", "age", "gender")
                 .values((group) -> {
                     group
@@ -81,7 +83,9 @@ public class InsertTest extends MysqlGrammarTest {
                             .add("a1", "b1")
                             .add("a1", "b1");
                 });
-        ;
+
+
+        var insert = builder.toInsertStmt();
 
         print(insert);
 

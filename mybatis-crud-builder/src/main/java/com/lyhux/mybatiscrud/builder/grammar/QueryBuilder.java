@@ -1,8 +1,6 @@
 package com.lyhux.mybatiscrud.builder.grammar;
 
-import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ValueNest;
-import com.lyhux.mybatiscrud.builder.grammar.insert.ValuesExpr;
+import com.lyhux.mybatiscrud.builder.grammar.insert.*;
 import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
@@ -23,6 +21,7 @@ public class QueryBuilder {
     //
     ValuesExpr values;
     AssignListExpr assignments;
+    DuplicateAssignListExpr duplicateAssigns;
 
     public QueryBuilder() {
         selectExpr = new ColumnExpr();
@@ -37,6 +36,8 @@ public class QueryBuilder {
         //
         values = new ValuesExpr();
         assignments = new AssignListExpr();
+        duplicateAssigns = new DuplicateAssignListExpr();
+
     }
 
     public ColumnExpr getSelectExpr() { return selectExpr; }
@@ -74,6 +75,11 @@ public class QueryBuilder {
 
     public QueryBuilder from(SelectStmt table, String alias) {
         tableRefsExpr.add(new TableRefExpr(new TableSubExpr(table, alias)));
+        return  this;
+    }
+
+    public QueryBuilder from(QueryBuilder table, String alias) {
+        tableRefsExpr.add(new TableRefExpr(new TableSubExpr(table.toSelectStmt(), alias)));
         return  this;
     }
 
@@ -216,6 +222,14 @@ public class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder union(QueryBuilder other) {
+        return union(other.toSelectStmt());
+    }
+
+    public QueryBuilder columns(String... fields) {
+        return select(fields);
+    }
+
     public QueryBuilder values(ValueNest nest) {
         var group = new ValueGroupExpr();
         values.add(group);
@@ -227,4 +241,74 @@ public class QueryBuilder {
         nest.updateSet(assignments);
         return this;
     }
+    public void onUpdate(DuplicateAssignNest assigns) {
+        assigns.assign(this.duplicateAssigns);
+    }
+
+    public SelectStmt toSelectStmt() {
+        return new SelectStmt(
+            selectExpr,
+            tableRefsExpr,
+            whereExpr,
+            groupByExpr,
+            orderByExpr,
+            limitExpr,
+            forExpr,
+            unionClause
+        );
+    }
+
+    public InsertStmt toInsertStmt() {
+        var refs = tableRefsExpr.getTableRefs();
+        TableRefExpr top;
+        if (refs.isEmpty()) {
+            top = new TableRefExpr(new TableNameExpr(new EscapedStr("")));
+        } else {
+            top = refs.getLast();
+        }
+
+        return new InsertStmt(
+            top,
+            selectExpr,
+            values,
+            duplicateAssigns
+        );
+    }
+
+    public UpdateStmt toUpdateStmt() {
+        var refs = tableRefsExpr.getTableRefs();
+        TableRefExpr top;
+        if (refs.isEmpty()) {
+            top = new TableRefExpr(new TableNameExpr(new EscapedStr("")));
+        } else {
+            top = refs.getLast();
+        }
+
+        return new UpdateStmt(
+            top,
+            assignments,
+            whereExpr,
+           orderByExpr,
+           limitExpr
+        );
+    }
+
+    public DeleteStmt toDeleteStmt() {
+        var refs = tableRefsExpr.getTableRefs();
+        TableRefExpr top;
+        if (refs.isEmpty()) {
+            top = new TableRefExpr(new TableNameExpr(new EscapedStr("")));
+        } else {
+            top = refs.getLast();
+        }
+
+        return new DeleteStmt(
+            top,
+            whereExpr,
+            orderByExpr,
+            limitExpr
+        );
+    }
+
+
 }

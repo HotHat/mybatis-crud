@@ -483,6 +483,9 @@ public final class WhereExpr implements WhereClauseExpr {
 
         return this;
     }
+    public WhereExpr whereExists(QueryBuilder stmt) {
+        return whereExists(stmt.toSelectStmt());
+    }
 
     public WhereExpr when(boolean test, WhereNest query) {
         if (test) {

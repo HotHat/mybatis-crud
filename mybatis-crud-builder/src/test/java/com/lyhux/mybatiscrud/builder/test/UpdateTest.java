@@ -20,8 +20,9 @@ public class UpdateTest extends MysqlGrammarTest {
 
     @Test
     public void testSet() {
-        var update = new UpdateStmt("users");
-        update
+        var update = new QueryBuilder()
+                .table("users")
+        // update
                 .set((set) -> {
                     set
                             .set("id", 1)
@@ -30,6 +31,7 @@ public class UpdateTest extends MysqlGrammarTest {
                     ;
 
                 })
+            .toUpdateStmt()
         ;
 
        print(update);
@@ -37,21 +39,22 @@ public class UpdateTest extends MysqlGrammarTest {
 
     @Test
     public void testWhere() {
-        var update = new UpdateStmt("users");
-        update
-                .set((set) -> {
-                    set
-                            .set("id", 1)
-                            .set("name", "lyhux")
-                            .setRaw("email", "hello@gmail.com")
-                    ;
+        var update = new QueryBuilder()
+            .table("users")
+            .set((set) -> {
+                set
+                    .set("id", 1)
+                    .set("name", "lyhux")
+                    .setRaw("email", "hello@gmail.com")
+                ;
 
-                })
-                .where((where) -> {
-                    where.where("id", 1);
-                })
-                .limit(10, 5)
-        ;
+            })
+            .where((where) -> {
+                where.where("id", 1);
+            })
+            .limit(10, 5)
+            .toUpdateStmt()
+            ;
 
         print(update);
     }

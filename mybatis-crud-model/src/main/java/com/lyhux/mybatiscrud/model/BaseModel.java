@@ -211,7 +211,55 @@ public class BaseModel<T> implements Model<T> {
         }
     }
 
-    public Class<?> getBeanType() {
+    public List<T> findAll() throws Exception {
+        var beanType = getBeanType();
+
+        var info = BeanFactory.getMetaInfo(beanType);
+
+        var manager = DatabaseManager.getInstance();
+        var selectQuery = manager.adapter();
+        var lst =  selectQuery
+            .query(query -> {
+                query.table(info.getTableName());
+            })
+            .get();
+
+        List<T> result = new ArrayList<>();
+
+        for (var map : lst) {
+            var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
+            result.add(proxy);
+        }
+
+        return result;
+    }
+
+    public List<T> query(QueryBuilder builder ) throws Exception {
+        var beanType = getBeanType();
+
+        var info = BeanFactory.getMetaInfo(beanType);
+
+        var manager = DatabaseManager.getInstance();
+        var selectQuery = manager.adapter();
+
+        builder.table(info.getTableName());
+
+        var lst =  selectQuery
+            .query(builder)
+            .get();
+
+        List<T> result = new ArrayList<>();
+
+        for (var map : lst) {
+            var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
+            result.add(proxy);
+        }
+
+        return result;
+    }
+
+
+    private Class<?> getBeanType() {
         return GenericTypeResolver.resolveTypeArguments(getClass(), Model.class)[0];
     }
 }

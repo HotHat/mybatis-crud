@@ -244,14 +244,38 @@ public class DatabaseTest {
         initDb();
         var userModel = new UserModel();
 
-        UserBean bean = new UserBean();
-        bean.setId(21L);
-        long count = userModel.delete(bean);
-        System.out.printf("delete count: %s\n", count);
+        var all = userModel.findAll();
+        for (var user : all) {
+            System.out.printf("user: %s\n", user);
+        }
 
-
+        // UserBean bean = new UserBean();
+        // bean.setId(21L);
+        // long count = userModel.delete(bean);
+        // System.out.printf("delete count: %s\n", count);
     }
 
+    @Test
+    public void testUserModelQuery() throws Exception {
+        initDb();
+        var userModel = new UserModel();
+
+        var all = userModel.query(
+            new QueryBuilder()
+                .select("users.*")
+                .where(wrapper -> {
+                    wrapper.where("id", 20);
+                })
+        );
+        for (var user : all) {
+            System.out.printf("user: %s\n", user);
+        }
+
+        // UserBean bean = new UserBean();
+        // bean.setId(21L);
+        // long count = userModel.delete(bean);
+        // System.out.printf("delete count: %s\n", count);
+    }
 
 
 }

@@ -8,6 +8,7 @@ import com.lyhux.mybatiscrud.builder.grammar.ColumnExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
+import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
 
 import java.util.ArrayList;
 
@@ -302,6 +303,7 @@ public class MysqlGrammar implements Grammar {
         var orderByExpr = stmt.orderBy();
         var limitExpr = stmt.limit();
         var unionClause = stmt.union();
+        var forExpr = stmt.forUpdate();
 
         // union bracket
         if (!unionClause.getUnionItems().isEmpty()) {
@@ -344,12 +346,6 @@ public class MysqlGrammar implements Grammar {
             sb.append(" ORDER BY ").append(compile(orderByExpr));
         }
 
-        // limit
-        if (limitExpr != null) {
-            sb.append(" LIMIT ").append(compile(limitExpr));
-        }
-        // for
-
         // union bracket
         if (!unionClause.getUnionItems().isEmpty()) {
             sb.append(")");
@@ -365,6 +361,17 @@ public class MysqlGrammar implements Grammar {
             bindings.addAll(result.bindings());
             sb.append(")");
         }
+
+        // limit
+        if (limitExpr != null) {
+            sb.append(" LIMIT ").append(compile(limitExpr));
+        }
+
+        // for
+        if (forExpr != null) {
+            sb.append(" FOR ").append(compile(forExpr));
+        }
+
 
         return new ExprResult(sb.toString(), bindings);
     }
@@ -476,7 +483,7 @@ public class MysqlGrammar implements Grammar {
         return sb.toString();
     }
 
-    public ExprResult compile(com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr expr) {
+    public ExprResult compile(AssignListExpr expr) {
         var sb = new StringBuilder();
         var bindings = new ArrayList<TypeValue<?>>();
 

@@ -9,6 +9,7 @@ public class UnionClause {
         unionItems = new ArrayList<>();
     }
 
+    public boolean isEmpty() { return unionItems.isEmpty(); }
     public void add(UnionItem item) {
         unionItems.add(item);
     }

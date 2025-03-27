@@ -1,10 +1,8 @@
 package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.bean.BeanMapUtil;
-import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
-import com.lyhux.mybatiscrud.builder.grammar.QueryNest;
-import com.lyhux.mybatiscrud.builder.grammar.Stmt;
+import com.lyhux.mybatiscrud.builder.grammar.*;
+import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
 import java.sql.Connection;
@@ -84,6 +82,83 @@ public class QueryAdapter {
         return result;
     }
 
+    public Page<Map<String, Object>> paginate(int page, int pageSize) throws SQLException {
+        Long total = 0L;
+        if (!builder.getGroupByExpr().isEmpty() || !builder.getUnionClause().isEmpty()) {
+            total = getGroupByOrUnionAggregate();
+        } else {
+            total = getSimpleAggregate();
+        }
+
+        page = page <= 0 ? 1 : page;
+        int offset = (page - 1) * pageSize;
+
+        builder.limit(pageSize, offset);
+
+        ExprResult paginateCompile = grammar.compile(builder.toSelectStmt());
+        var records = getQueryResult(paginateCompile);
+
+        return new Page<>(page, pageSize, Math.toIntExact(total), records);
+    }
+
+    private Long getSimpleAggregate() throws SQLException {
+        var aggregate = new ColumnExpr().add(new RawStr("count(*) AS aggregate"));
+        var aggregateStmt = new SelectStmt(
+            aggregate,
+            builder.getTableRefsExpr(),
+            builder.getWhereExpr(),
+            builder.getGroupByExpr(),
+            new OrderByExpr(),
+            null,
+            null,
+            new UnionClause()
+        );
+
+        ExprResult aggregateResult = grammar.compile(aggregateStmt);
+
+        var totalMap = getQueryResult(aggregateResult);
+        if (totalMap.isEmpty()) {
+            return 0L;
+        }
+
+        return (Long)totalMap.getFirst().getOrDefault("aggregate", 0);
+    }
+
+    private Long getGroupByOrUnionAggregate() throws SQLException {
+        var aggregate = new ColumnExpr().add(new RawStr("count(*) AS aggregate"));
+
+        var totalStmt = new SelectStmt(
+            new ColumnExpr().add(new RawStr("*")),
+            builder.getTableRefsExpr(),
+            builder.getWhereExpr(),
+            builder.getGroupByExpr(),
+            new OrderByExpr(),
+            null,
+            null,
+            builder.getUnionClause()
+        );
+
+        var aggregateStmt = new SelectStmt(
+            aggregate,
+            new TableRefsExpr().add(new TableRefExpr(new TableSubExpr(totalStmt, "temp_table"))),
+            builder.getWhereExpr(),
+            builder.getGroupByExpr(),
+            new OrderByExpr(),
+            null,
+            null,
+            new UnionClause()
+        );
+
+        ExprResult aggregateResult = grammar.compile(aggregateStmt);
+
+        var totalMap = getQueryResult(aggregateResult);
+        if (totalMap.isEmpty()) {
+            return 0L;
+        }
+
+        return (Long)totalMap.getFirst().getOrDefault("aggregate", 0);
+    }
+
     public <T> List<T> get(Class<T> bean) throws Exception {
         var all = get();
         var result = new ArrayList<T>(all.size());
@@ -96,9 +171,13 @@ public class QueryAdapter {
     }
 
     public List<Map<String, Object>> get() throws Exception {
-        var result = new ArrayList<Map<String, Object>>();
 
         var compileResult = grammar.compile(builder.toSelectStmt());
+        return getQueryResult(compileResult);
+    }
+
+    private List<Map<String, Object>> getQueryResult(ExprResult compileResult) throws SQLException {
+        var result = new ArrayList<Map<String, Object>>();
 
         if (isLogQuery) {
             queryLogs.add(compileResult);

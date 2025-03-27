@@ -11,11 +11,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class AdapterTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "";
+    static final String PASSWORD = "123456";
 
     private Connection conn;
 
@@ -279,5 +280,17 @@ public class AdapterTest {
             .first(UserBean.class);
 
         System.out.printf("user: %s\n", user);
+    }
+
+    @Test
+    public void testPaginate() throws Exception {
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
+
+        QueryBuilder builder = new QueryBuilder();
+        builder.table("users");
+
+        adapter.query(builder);
+        Page<Map<String, Object>> page = adapter.paginate(1, 10);
+        System.out.printf("page=%d, pageSize=%d, total=%d\n", page.page(), page.pageSize(), page.total());
     }
 }

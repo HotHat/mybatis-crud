@@ -55,7 +55,7 @@ public class InsertTest extends MysqlGrammarTest {
 
     @Test
     public void testInsertExpr() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
         // var insert = new InsertStmt(new EscapedStr("users"));
         builder

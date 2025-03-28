@@ -2,7 +2,6 @@ package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.builder.grammar.*;
-import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
 
 import java.sql.Connection;
@@ -13,7 +12,7 @@ import java.util.*;
 
 public class QueryAdapter {
 
-    protected QueryBuilder builder;
+    protected Query builder;
     protected Connection conn;
     protected Grammar grammar;
 
@@ -24,7 +23,7 @@ public class QueryAdapter {
     public QueryAdapter(Connection conn, Grammar grammar) {
         this.conn = conn;
         this.grammar = grammar;
-        builder = new QueryBuilder();
+        builder = new Query();
 
         queryLogs = new ArrayList<>();
     }
@@ -34,7 +33,7 @@ public class QueryAdapter {
         return this;
     }
 
-    public QueryAdapter query(QueryBuilder builder) {
+    public QueryAdapter query(Query builder) {
         this.builder = builder;
         return this;
     }
@@ -82,7 +81,27 @@ public class QueryAdapter {
         return result;
     }
 
-    public Page<Map<String, Object>> paginate(int page, int pageSize) throws SQLException {
+    public <T> Page<T> paginate(Class<T> bean) throws Exception {
+        var pageMap = paginate();
+
+        var result = new ArrayList<T>(pageMap.records().size());
+        for (Map<String, Object> map: pageMap.records()) {
+            var item = BeanMapUtil.mapToBean(map, bean);
+            result.add(item);
+        }
+
+        return new Page<>(pageMap.page(), pageMap.pageSize(), pageMap.total(), result);
+    }
+
+    public Page<Map<String, Object>> paginate() throws SQLException {
+        if (builder.getPaginate() == null) {
+            return new Page<>(0, 0, 0, new ArrayList<>());
+        }
+
+        var paginate = builder.getPaginate();
+        int page = paginate.page();
+        int pageSize = paginate.pageSize();
+
         Long total = 0L;
         if (!builder.getGroupByExpr().isEmpty() || !builder.getUnionClause().isEmpty()) {
             total = getGroupByOrUnionAggregate();

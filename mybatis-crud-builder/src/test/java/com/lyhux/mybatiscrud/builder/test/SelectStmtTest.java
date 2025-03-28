@@ -1,13 +1,12 @@
 package com.lyhux.mybatiscrud.builder.test;
 
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
-import com.lyhux.mybatiscrud.builder.grammar.SelectStmt;
+import com.lyhux.mybatiscrud.builder.grammar.Query;
 import org.junit.jupiter.api.Test;
 
 public class SelectStmtTest extends MysqlGrammarTest {
     @Test
     public void testSimple() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
         builder.select("*")
                 .from("users")
@@ -23,9 +22,9 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testSubQuery() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
-        var table = new QueryBuilder().select("*").from("users").where((query) -> { query.where("id", ">", 123);});
+        var table = new Query().select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
                 .from(table.toSelectStmt(), "tb1")
@@ -36,9 +35,9 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testJoin() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
-        var table = new QueryBuilder();
+        var table = new Query();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -52,7 +51,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
     @Test
     public void testJoin2() {
 
-        var selector = new QueryBuilder();
+        var selector = new Query();
 
         selector.select("*")
                .from("users")
@@ -68,14 +67,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testJoinSub() {
-        var latestPosts = new QueryBuilder().from("posts")
+        var latestPosts = new Query().from("posts")
                                           .select("user_id")
                                           .where((query) -> {
                                               query.where("is_published", 1);
                                           })
                                           .groupBy("user_id");
 
-        var selector = new QueryBuilder();
+        var selector = new Query();
 
         selector.from("users")
                 .joinSub(latestPosts.toSelectStmt(), "latest_posts", (join) -> {
@@ -94,9 +93,9 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testLeftJoin() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
-        var table = new QueryBuilder();
+        var table = new Query();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -109,9 +108,9 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testRightJoin() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
-        var table = new QueryBuilder();
+        var table = new Query();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -125,9 +124,9 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testSubQueryWithJoin() {
-        var builder = new QueryBuilder();
+        var builder = new Query();
 
-        var table = new QueryBuilder();
+        var table = new Query();
         table.select("*").from("users").where((query) -> { query.where("id", ">", 123);});
 
         builder.select("*")
@@ -140,7 +139,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testGroupBy() {
-        var table = new QueryBuilder();
+        var table = new Query();
         table
                 .from("users")
                 .where((query) -> { query.where("id", ">", 123);})
@@ -155,7 +154,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testOrderBy() {
-        var table = new QueryBuilder();
+        var table = new Query();
         table
                 .from("users")
                 .where((query) -> { query.where("id", ">", 123);})
@@ -169,7 +168,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testLimit() {
-        var table = new QueryBuilder();
+        var table = new Query();
         table
                 .from("users")
                 .orderBy("name", "asc")
@@ -178,7 +177,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         print(table.toSelectStmt());
 
-        var table1 = new QueryBuilder();
+        var table1 = new Query();
         table1
                 .select("user.id", "user.name", "orders.id AS order_id")
                 .selectRaw("orders.no AS order_no")
@@ -193,14 +192,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testWhereExists() {
-        var orders = new QueryBuilder() ;
+        var orders = new Query() ;
         orders.selectRaw("1")
                 .from("orders")
                 .where((query) -> {
                     query.whereColumn("orders.user_id",  "users.id");
                 });
 
-        var users = new QueryBuilder();
+        var users = new Query();
         users.from("users")
                 .where((query) -> {
                     query.whereExists(orders);
@@ -211,7 +210,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
     @Test
     public void testUnion() {
-        var order1 = new QueryBuilder();
+        var order1 = new Query();
         order1.selectRaw("1")
             .from("orders")
             .where((query) -> {
@@ -221,13 +220,13 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
             });
 
-        var order2 = new QueryBuilder();
+        var order2 = new Query();
         order2.from("users")
             .where((query) -> {
                 query.where("user_id", ">", 123);
             });
 
-        var order3 = new QueryBuilder();
+        var order3 = new Query();
         order3.from("users")
             .union(order1)
             .union(order2)

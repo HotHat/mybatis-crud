@@ -1,7 +1,6 @@
 package com.lyhux.mybatiscrud.test;
 
-import com.lyhux.mybatiscrud.builder.grammar.InsertStmt;
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
+import com.lyhux.mybatiscrud.builder.grammar.Query;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -124,7 +123,7 @@ public class ConnectionTest {
 
     @Test
     public void testInsertStmt() throws SQLException {
-        var insert = new QueryBuilder().table("user");
+        var insert = new Query().table("user");
 
         insert.columns("username", "password", "gender", "email", "created_at", "updated_at")
             .values((group -> {

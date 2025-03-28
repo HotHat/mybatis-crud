@@ -1,9 +1,8 @@
 package com.lyhux.mybatiscrud.model;
 
 import com.lyhux.mybatiscrud.bean.BeanFactory;
-import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.bean.annotation.KeyType;
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
+import com.lyhux.mybatiscrud.builder.grammar.Query;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -108,7 +107,7 @@ public class BaseModel<T> implements Model<T> {
         var updateQuery = manager.adapter();
 
 
-        var query = new QueryBuilder()
+        var query = new Query()
             .table(metaInfo.getTableName());
 
         try {
@@ -166,7 +165,7 @@ public class BaseModel<T> implements Model<T> {
         var manager = DatabaseManager.getInstance();
         var deleteQuery = manager.adapter();
 
-        var query = new QueryBuilder()
+        var query = new Query()
             .table(metaInfo.getTableName());
 
         try {
@@ -234,7 +233,7 @@ public class BaseModel<T> implements Model<T> {
         return result;
     }
 
-    public List<T> query(QueryBuilder builder ) throws Exception {
+    public List<T> query(Query builder) throws Exception {
         var beanType = getBeanType();
 
         var info = BeanFactory.getMetaInfo(beanType);
@@ -256,6 +255,30 @@ public class BaseModel<T> implements Model<T> {
         }
 
         return result;
+    }
+
+    public Page<T> paginate(Query builder) throws Exception {
+        var beanType = getBeanType();
+
+        var info = BeanFactory.getMetaInfo(beanType);
+
+        var manager = DatabaseManager.getInstance();
+        var selectQuery = manager.adapter();
+
+        builder.table(info.getTableName());
+
+        var pageRecord =  selectQuery
+            .query(builder)
+            .paginate();
+
+        List<T> result = new ArrayList<>();
+
+        for (var map : pageRecord.records()) {
+            var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
+            result.add(proxy);
+        }
+
+        return new Page<>(pageRecord.page(), pageRecord.pageSize(), pageRecord.total(), result);
     }
 
 

@@ -8,7 +8,7 @@ import com.lyhux.mybatiscrud.builder.grammar.update.AssignNest;
 
 import java.util.Arrays;
 
-public class QueryBuilder {
+public class Query {
     ColumnExpr selectExpr;
     TableRefsExpr tableRefsExpr;
     WhereExpr whereExpr;
@@ -23,7 +23,10 @@ public class QueryBuilder {
     AssignListExpr assignments;
     DuplicateAssignListExpr duplicateAssigns;
 
-    public QueryBuilder() {
+    //
+    Paginate paginate;
+
+    public Query() {
         selectExpr = new ColumnExpr();
         tableRefsExpr = new TableRefsExpr();
         whereExpr = new WhereExpr();
@@ -50,40 +53,43 @@ public class QueryBuilder {
     //
     public ValuesExpr getValues() { return values; }
     public AssignListExpr getAssignments() { return assignments; }
+    //
+    public Paginate getPaginate() { return paginate; }
 
-    public QueryBuilder select(String... fields) {
+
+    public Query select(String... fields) {
         selectExpr.addAll(Arrays.stream(fields).map(EscapedStr::new).toList());
         return this;
     }
 
-    public QueryBuilder selectRaw(String field) {
+    public Query selectRaw(String field) {
         selectExpr.add(new RawStr(field));
         return this;
     }
 
-    public QueryBuilder from(String table) {
+    public Query from(String table) {
        return  from(table, "");
     }
 
-    public QueryBuilder table(String table) {
+    public Query table(String table) {
         return  from(table, "");
     }
 
-    public QueryBuilder table(String table, String alias) {
+    public Query table(String table, String alias) {
         return  from(table, alias);
     }
 
-    public QueryBuilder from(SelectStmt table, String alias) {
+    public Query from(SelectStmt table, String alias) {
         tableRefsExpr.add(new TableRefExpr(new TableSubExpr(table, alias)));
         return  this;
     }
 
-    public QueryBuilder from(QueryBuilder table, String alias) {
+    public Query from(Query table, String alias) {
         tableRefsExpr.add(new TableRefExpr(new TableSubExpr(table.toSelectStmt(), alias)));
         return  this;
     }
 
-    public QueryBuilder from(String table, String alias) {
+    public Query from(String table, String alias) {
         tableRefsExpr.add(
                 new TableRefExpr(
                         new TableNameExpr(
@@ -92,29 +98,29 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder where(WhereNest query) {
+    public Query where(WhereNest query) {
         whereExpr.where(query, false, "AND");
         return this;
     }
 
-    public QueryBuilder orWhere(WhereNest query) {
+    public Query orWhere(WhereNest query) {
         whereExpr.where(query, false, "OR");
         return this;
     }
 
-    public QueryBuilder join(String table, String leftColumn, String operator, String rightColumn) {
+    public Query join(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "INNER");
     }
 
-    public QueryBuilder join(String table, WhereNest query) {
+    public Query join(String table, WhereNest query) {
         return join(table, query, "INNER");
     }
 
-    public QueryBuilder joinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query joinSub(SelectStmt subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "INNER");
     }
 
-    public QueryBuilder joinSub(SelectStmt subTable, String tableAlias, WhereNest query, String joinType) {
+    public Query joinSub(SelectStmt subTable, String tableAlias, WhereNest query, String joinType) {
         var whereExpr = new WhereExpr();
         whereExpr.on(query);
         var joinedExpr = new TableJoinedExpr(joinType, new TableSubExpr(subTable,  tableAlias), whereExpr);
@@ -127,23 +133,23 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder leftJoin(String table, String leftColumn, String operator, String rightColumn) {
+    public Query leftJoin(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "LEFT");
     }
 
-    public QueryBuilder leftJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query leftJoinSub(SelectStmt subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "LEFT");
     }
 
-    public QueryBuilder rightJoin(String table, String leftColumn, String operator, String rightColumn) {
+    public Query rightJoin(String table, String leftColumn, String operator, String rightColumn) {
         return join(table, leftColumn, operator, rightColumn, "RIGHT");
     }
 
-    public QueryBuilder rightJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query rightJoinSub(SelectStmt subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "RIGHT");
     }
 
-    public QueryBuilder join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
+    public Query join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
         var tableExpr = new TableNameExpr(new EscapedStr(table));
         var whereExpr = new WhereExpr();
         whereExpr.on(leftColumn, operator, rightColumn);
@@ -157,7 +163,7 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder join(String table, WhereNest query, String joinType) {
+    public Query join(String table, WhereNest query, String joinType) {
         var tableExpr = new TableNameExpr(new EscapedStr(table));
         var whereExpr = new WhereExpr();
         whereExpr.on(query);
@@ -172,7 +178,7 @@ public class QueryBuilder {
     }
 
     // group by
-    public QueryBuilder groupBy(String... columns) {
+    public Query groupBy(String... columns) {
         this.groupByExpr = new GroupByExpr();
         for (String column : columns) {
             this.groupByExpr.groupBy(new EscapedStr(column));
@@ -181,7 +187,7 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder having(WhereNest query) {
+    public Query having(WhereNest query) {
         if (groupByExpr != null) {
             groupByExpr.having(query);
         }
@@ -190,7 +196,7 @@ public class QueryBuilder {
     }
 
     // order by
-    public QueryBuilder orderBy(String column, String order) {
+    public Query orderBy(String column, String order) {
         if (orderByExpr == null) {
             orderByExpr = new OrderByExpr();
         }
@@ -200,44 +206,44 @@ public class QueryBuilder {
     }
 
     // limit
-    public QueryBuilder limit(int rowCount) {
+    public Query limit(int rowCount) {
         limitExpr = new LimitExpr(rowCount);
 
         return this;
     }
 
-    public QueryBuilder limit(int rowCount, int offset) {
+    public Query limit(int rowCount, int offset) {
         limitExpr = new LimitExpr(rowCount, offset);
         return this;
     }
 
     // for update | share
-    public QueryBuilder forUpdate() {
+    public Query forUpdate() {
         forExpr = new ForExpr("UPDATE");
         return this;
     }
 
-    public QueryBuilder union(SelectStmt other) {
+    public Query union(SelectStmt other) {
         unionClause.add(new UnionItem("UNION", other));
         return this;
     }
 
-    public QueryBuilder union(QueryBuilder other) {
+    public Query union(Query other) {
         return union(other.toSelectStmt());
     }
 
-    public QueryBuilder columns(String... fields) {
+    public Query columns(String... fields) {
         return select(fields);
     }
 
-    public QueryBuilder values(ValueNest nest) {
+    public Query values(ValueNest nest) {
         var group = new ValueGroupExpr();
         values.add(group);
         nest.addValues(group);
         return this;
     }
 
-    public QueryBuilder set(AssignNest nest) {
+    public Query set(AssignNest nest) {
         nest.updateSet(assignments);
         return this;
     }
@@ -256,6 +262,11 @@ public class QueryBuilder {
             forExpr,
             unionClause
         );
+    }
+
+    public Query paginate(int page, int pageSize) {
+        paginate = new Paginate(page, pageSize);
+        return this;
     }
 
     public InsertStmt toInsertStmt() {

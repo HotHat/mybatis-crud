@@ -483,7 +483,7 @@ public final class WhereExpr implements WhereClauseExpr {
 
         return this;
     }
-    public WhereExpr whereExists(QueryBuilder stmt) {
+    public WhereExpr whereExists(Query stmt) {
         return whereExists(stmt.toSelectStmt());
     }
 

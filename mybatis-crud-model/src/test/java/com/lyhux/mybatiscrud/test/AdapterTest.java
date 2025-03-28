@@ -1,6 +1,6 @@
 package com.lyhux.mybatiscrud.test;
 
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
+import com.lyhux.mybatiscrud.builder.grammar.Query;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import com.lyhux.mybatiscrud.model.*;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +40,7 @@ public class AdapterTest {
     public void testInsert() throws SQLException {
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
 
-        QueryBuilder builder = new QueryBuilder();
+        Query builder = new Query();
         builder.table("users")
                .columns("username", "password", "gender", "email", "created_at", "updated_at")
                .values((group -> {
@@ -131,7 +131,7 @@ public class AdapterTest {
 
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var lst = adapter
-            .query(new QueryBuilder().from("users"))
+            .query(new Query().from("users"))
             .get();
 
         System.out.println(lst);
@@ -155,7 +155,7 @@ public class AdapterTest {
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
         var lst = adapter
             .qualifier(UserBean.class)
-            .query(new QueryBuilder().from("users"))
+            .query(new Query().from("users"))
             .getQualifier();
 
         for (var item : lst) {
@@ -267,7 +267,7 @@ public class AdapterTest {
         var selector = db.adapter();
 
         var lst = selector
-            .query(new QueryBuilder().from("users"))
+            .query(new Query().from("users"))
             // .from("users")
             .get(UserBean.class);
 
@@ -275,7 +275,7 @@ public class AdapterTest {
             System.out.println(row);
         }
 
-        var user = db.adapter().query(new QueryBuilder().from("users"))
+        var user = db.adapter().query(new Query().from("users"))
             // .from("users")
             .first(UserBean.class);
 
@@ -286,11 +286,27 @@ public class AdapterTest {
     public void testPaginate() throws Exception {
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
 
-        QueryBuilder builder = new QueryBuilder();
-        builder.table("users");
+        Query builder = new Query();
+        builder.table("users").paginate(1, 10);
 
         adapter.query(builder);
-        Page<Map<String, Object>> page = adapter.paginate(1, 10);
+        Page<Map<String, Object>> page = adapter.paginate();
         System.out.printf("page=%d, pageSize=%d, total=%d\n", page.page(), page.pageSize(), page.total());
     }
+
+    @Test
+    public void testPaginateBean() throws Exception {
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
+
+        Query builder = new Query();
+        builder.table("users").paginate(1, 5);
+
+        adapter.query(builder);
+        Page<UserBean> page = adapter.paginate(UserBean.class);
+        System.out.printf("page=%d, pageSize=%d, total=%d\n", page.page(), page.pageSize(), page.total());
+        for (var bean : page.records()) {
+            System.out.printf("bean: %s\n", bean);
+        }
+    }
+
 }

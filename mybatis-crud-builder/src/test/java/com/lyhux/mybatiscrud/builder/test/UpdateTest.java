@@ -20,7 +20,7 @@ public class UpdateTest extends MysqlGrammarTest {
 
     @Test
     public void testSet() {
-        var update = new QueryBuilder()
+        var update = new Query()
                 .table("users")
         // update
                 .set((set) -> {
@@ -39,7 +39,7 @@ public class UpdateTest extends MysqlGrammarTest {
 
     @Test
     public void testWhere() {
-        var update = new QueryBuilder()
+        var update = new Query()
             .table("users")
             .set((set) -> {
                 set

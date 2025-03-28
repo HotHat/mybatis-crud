@@ -1,27 +1,22 @@
 package com.lyhux.mybatiscrud.test;
 
 import com.lyhux.mybatiscrud.bean.BeanFactory;
-import com.lyhux.mybatiscrud.bean.annotation.KeyType;
-import com.lyhux.mybatiscrud.builder.grammar.QueryBuilder;
-import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
+import com.lyhux.mybatiscrud.builder.grammar.Query;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import com.lyhux.mybatiscrud.model.Database;
 import com.lyhux.mybatiscrud.model.DatabaseManager;
-import net.bytebuddy.implementation.bytecode.member.FieldAccess;
 import org.junit.jupiter.api.Test;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 public class DatabaseTest {
@@ -35,7 +30,7 @@ public class DatabaseTest {
         var test1 = true;
         var test2 = false;
 
-        var selector = new QueryBuilder()
+        var selector = new Query()
             .select()
             .from("users")
             .select("id", "username", "age")
@@ -261,7 +256,7 @@ public class DatabaseTest {
         var userModel = new UserModel();
 
         var all = userModel.query(
-            new QueryBuilder()
+            new Query()
                 .select("users.*")
                 .where(wrapper -> {
                     wrapper.where("id", 20);
@@ -277,5 +272,25 @@ public class DatabaseTest {
         // System.out.printf("delete count: %s\n", count);
     }
 
+    @Test
+    public void testUserModelPaginate() throws Exception {
+        initDb();
+        var userModel = new UserModel();
 
+        var page = userModel.paginate(
+            new Query().paginate(1, 5)
+                .where(wrapper -> {
+                    wrapper.where("id", ">", 10);
+                })
+        );
+        System.out.printf("page: %d, pageSize: %d, total: %d\n", page.page(), page.pageSize(), page.total());
+        for (var user : page.records()) {
+            System.out.printf("user: %s\n", user);
+        }
+
+        // UserBean bean = new UserBean();
+        // bean.setId(21L);
+        // long count = userModel.delete(bean);
+        // System.out.printf("delete count: %s\n", count);
+    }
 }

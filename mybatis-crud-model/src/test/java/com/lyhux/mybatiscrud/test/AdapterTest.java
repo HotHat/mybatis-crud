@@ -309,4 +309,12 @@ public class AdapterTest {
         }
     }
 
+    @Test
+    public void testCount() throws Exception {
+        var adapter = new QueryAdapter(conn, new MysqlGrammar());
+
+        long count = adapter.query(query -> query.table("users")).count();
+        System.out.printf("users count: %d\n", count);
+    }
+
 }

@@ -258,7 +258,31 @@ public class QueryAdapter {
         return (long) ret;
     }
 
-    public ExprResult toSql(Stmt stmt){
-        return grammar.compile(stmt);
+    public Long execute(String statement, List<TypeValue<?>> bindings) throws SQLException {
+        var prepare = conn.prepareStatement(statement);
+
+        int count = 1;
+
+        if (bindings != null) {
+            for (var binding : bindings) {
+                prepare.setObject(count++, binding);
+            }
+        }
+
+        int ret = prepare.executeUpdate();
+        return (long) ret;
     }
+
+    public Long count() throws SQLException {
+        Long total;
+        if (!builder.getGroupByExpr().isEmpty() || !builder.getUnionClause().isEmpty()) {
+            total = getGroupByOrUnionAggregate();
+        } else {
+            total = getSimpleAggregate();
+        }
+
+        return total;
+    }
+
+
 }

@@ -10,10 +10,10 @@ public class TableRefExprTest extends MysqlGrammarTest {
     @Test
     public void testTableNameExpr() {
         var table = new TableNameExpr(new EscapedStr("users"));
-        print(table);
+        exprAssert(table);
 
         var tableAlias = new TableNameExpr(new EscapedStr("users"), new EscapedStr("alias"));
-        print(tableAlias);
+        exprAssert(tableAlias);
     }
 
     @Test
@@ -28,16 +28,16 @@ public class TableRefExprTest extends MysqlGrammarTest {
         where.on("users.id", "=", "orders.user_id").where("users.id", ">", 13);
         var joinedExpr = new TableJoinedExpr(table, where);
 
-        print(joinedExpr);
+        exprAssert(joinedExpr);
     }
 
     @Test
     public void testTableRefExpr() {
         var tableRef = new TableRefExpr(new TableNameExpr("users"));
-        print(tableRef);
+        exprAssert(tableRef);
 
         var tableRef2 = new TableRefExpr(new TableNameExpr("users"));
-        print(tableRef2);
+        exprAssert(tableRef2);
 
         var table1 = new TableNameExpr("orders");
         var where1 = new WhereExpr(false);
@@ -51,23 +51,23 @@ public class TableRefExprTest extends MysqlGrammarTest {
 
         tableRef2.add(joined1);
         tableRef2.add(joined2);
-        print(tableRef2);
+        exprAssert(tableRef2);
     }
 
     @Test
     public void testTableRefsExpr() {
         var tableRef = new TableRefExpr(new TableNameExpr("users"));
-        print(tableRef);
+        exprAssert(tableRef);
 
         var tableRef2 = new TableRefExpr(new TableNameExpr("orders"));
-        print(tableRef2);
+        exprAssert(tableRef2);
 
         var refs = new TableRefsExpr();
         refs.add(tableRef);
         refs.add(tableRef2);
 
 
-        print(refs);
+        exprAssert(refs);
     }
 
 }

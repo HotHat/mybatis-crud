@@ -1,9 +1,9 @@
 package com.lyhux.mybatiscrud.builder.test;
 
-import com.lyhux.mybatiscrud.builder.grammar.EscapedStr;
-import com.lyhux.mybatiscrud.builder.grammar.RawStr;
-import com.lyhux.mybatiscrud.builder.grammar.ColumnExpr;
+import com.lyhux.mybatiscrud.builder.grammar.*;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 public class SelectExprTest extends MysqlGrammarTest {
 
@@ -11,7 +11,13 @@ public class SelectExprTest extends MysqlGrammarTest {
     public void testEmptySelectExpr() {
         var expr = new ColumnExpr();
 
-        print(expr);
+        exprAssert(
+            expr,
+            new ExprResult(
+                "*",
+                List.of()
+            )
+        );
     }
 
     @Test
@@ -22,7 +28,25 @@ public class SelectExprTest extends MysqlGrammarTest {
                 .add(new EscapedStr("orders.id AS order_id"))
         ;
 
-        print(expr);
+        exprAssert(expr, new ExprResult(
+            "version(), `id` AS `user_id`, `orders`.`id` AS `order_id`",
+            List.of()
+        ));
+    }
+
+    @Test
+    public void testSelectRaw() {
+
+        var expr = new ColumnExpr();
+        expr.add(new RawStr("price * ? as price_with_tax"), TypeValue.of("1.0825"));
+
+        exprAssert(
+            expr,
+            new ExprResult(
+                "price * ? as price_with_tax",
+                List.of( TypeValue.of("1.0825"))
+            )
+        );
     }
 
     @Test

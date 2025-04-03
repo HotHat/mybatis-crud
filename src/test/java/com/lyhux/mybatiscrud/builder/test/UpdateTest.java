@@ -15,7 +15,7 @@ public class UpdateTest extends MysqlGrammarTest {
                 new EscapedStr("column"),
                 new BindingValue<>(new RawStr("?"), TypeValue.of(1234))));
 
-        print(assign);
+        exprAssert(assign);
     }
 
     @Test
@@ -34,7 +34,7 @@ public class UpdateTest extends MysqlGrammarTest {
             .toUpdateStmt()
         ;
 
-       print(update);
+       exprAssert(update);
     }
 
     @Test
@@ -56,6 +56,6 @@ public class UpdateTest extends MysqlGrammarTest {
             .toUpdateStmt()
             ;
 
-        print(update);
+        exprAssert(update);
     }
 }

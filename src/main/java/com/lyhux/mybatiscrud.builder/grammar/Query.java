@@ -7,6 +7,8 @@ import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignNest;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Query {
     ColumnExpr selectExpr;
@@ -62,8 +64,13 @@ public class Query {
         return this;
     }
 
-    public Query selectRaw(String field) {
-        selectExpr.add(new RawStr(field));
+    public Query selectRaw(String field, String... bindings) {
+        selectExpr.add(new RawStr(field), Arrays.stream(bindings).map(TypeValue::of).collect(Collectors.toList()));
+        return this;
+    }
+
+    public Query selectRaw(String field, List<String> bindings) {
+        selectExpr.add(new RawStr(field), bindings.stream().map(TypeValue::of).collect(Collectors.toList()));
         return this;
     }
 
@@ -320,6 +327,4 @@ public class Query {
             limitExpr
         );
     }
-
-
 }

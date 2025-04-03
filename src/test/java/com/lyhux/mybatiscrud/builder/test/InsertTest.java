@@ -25,7 +25,7 @@ public class InsertTest extends MysqlGrammarTest {
         lst.add(val);
         lst.add(val1);
 
-        print(lst);
+        exprAssert(lst);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class InsertTest extends MysqlGrammarTest {
                 .add(new EscapedStr("age"))
                 .add(new EscapedStr("gender"));
 
-        print(columnExpr);
+        exprAssert(columnExpr, null);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class InsertTest extends MysqlGrammarTest {
         lst.add(new DuplicateAssignExpr(new EscapedStr("name"), new EscapedStr("ab.name")));
         lst.add(new DuplicateAssignExpr(new EscapedStr("name2"), new EscapedStr("ab.name2")));
 
-        print(lst);
+        exprAssert(lst);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class InsertTest extends MysqlGrammarTest {
 
         var insert = builder.toInsertStmt();
 
-        print(insert);
+        exprAssert(insert);
 
     }
 }

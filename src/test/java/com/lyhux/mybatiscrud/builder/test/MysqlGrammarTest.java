@@ -6,6 +6,7 @@ import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
 import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
 public class MysqlGrammarTest {
@@ -17,80 +18,82 @@ public class MysqlGrammarTest {
         grammar = new MysqlGrammar();
     }
 
-    public void print(ColumnExpr expr) {
+    public void exprAssert(ColumnExpr expr, ExprResult expected) {
+        var result = grammar.compile(expr);
+        System.out.println(result);
+
+        Assertions.assertEquals(expected, result);
+    }
+
+    public void exprAssert(WhereClauseExpr expr) {
+        var result = grammar.compile(expr);
+        System.out.println(result.statement());
+        System.out.println(result.bindings());
+    }
+
+    public void exprAssert(ExprResult result) {
+        System.out.println(result.statement());
+        System.out.println(result.bindings());
+    }
+
+    public void exprAssert(TableNameExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
 
-    public void print(WhereClauseExpr expr) {
+    public void exprAssert(TableSubExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(ExprResult result) {
-        System.out.println(result.statement());
-        System.out.println(result.bindings());
-    }
-
-    public void print(TableNameExpr expr) {
-        var result = grammar.compile(expr);
-        System.out.println(result);
-    }
-
-    public void print(TableSubExpr expr) {
+    public void exprAssert(TableFactorExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(TableFactorExpr expr) {
+    public void exprAssert(TableJoinedExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(TableJoinedExpr expr) {
+    public void exprAssert(TableRefExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(TableRefExpr expr) {
+    public void exprAssert(TableRefsExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(TableRefsExpr expr) {
-        var result = grammar.compile(expr);
-        System.out.println(result.statement());
-        System.out.println(result.bindings());
-    }
-
-    public void print(SelectStmt stmt) {
+    public void exprAssert(SelectStmt stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(GroupByExpr stmt) {
+    public void exprAssert(GroupByExpr stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(OrderByExpr expr) {
+    public void exprAssert(OrderByExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
 
-    public void print(LimitExpr expr) {
+    public void exprAssert(LimitExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
 
-    public void print(ForExpr expr) {
+    public void exprAssert(ForExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
@@ -101,36 +104,36 @@ public class MysqlGrammarTest {
     //     System.out.println(result);
     // }
 
-    public void print(ValueGroupExpr stmt) {
+    public void exprAssert(ValueGroupExpr stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(DuplicateAssignListExpr expr) {
+    public void exprAssert(DuplicateAssignListExpr expr) {
         var result = grammar.compile(expr);
         System.out.println(result);
     }
 
-    public void print(InsertStmt stmt) {
+    public void exprAssert(InsertStmt stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr stmt) {
+    public void exprAssert(com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public void print(UpdateStmt stmt) {
+    public void exprAssert(UpdateStmt stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
     }
 
-    public ExprResult print(DeleteStmt stmt) {
+    public ExprResult exprAssert(DeleteStmt stmt) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());

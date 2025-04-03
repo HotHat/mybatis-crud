@@ -15,25 +15,25 @@ public class OrderByLimitForTest extends MysqlGrammarTest {
                 .add(new OrderByItem(new EscapedStr("name"), "asc"))
                 ;
 
-        print(orderBy);
+        exprAssert(orderBy);
     }
 
     @Test
     public void testLimit() {
         var limit = new LimitExpr(10);
-        print(limit );
+        exprAssert(limit );
 
         var limit2 = new LimitExpr(10, 5);
-        print(limit2);
+        exprAssert(limit2);
     }
 
     @Test
     public void testFor() {
         var forExpr = new ForExpr("update");
         forExpr.of("users", "orders");
-        print(forExpr);
+        exprAssert(forExpr);
 
         var forExpr1 = new ForExpr("update");
-        print(forExpr1);
+        exprAssert(forExpr1);
     }
 }

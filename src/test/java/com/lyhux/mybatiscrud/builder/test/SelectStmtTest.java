@@ -17,7 +17,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -30,7 +30,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .from(table.toSelectStmt(), "tb1")
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                })
         ;
 
-        print(selector.toSelectStmt());
+        exprAssert(selector.toSelectStmt());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
             })
         ;
 
-        print(selector.toSelectStmt());
+        exprAssert(selector.toSelectStmt());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .leftJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .rightJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "users.id", "=", "orders.user_id")
         ;
 
-        print(builder.toSelectStmt());
+        exprAssert(builder.toSelectStmt());
     }
 
     @Test
@@ -149,7 +149,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        print(table.toSelectStmt());
+        exprAssert(table.toSelectStmt());
     }
 
     @Test
@@ -163,7 +163,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         ;
 
-        print(table.toSelectStmt());
+        exprAssert(table.toSelectStmt());
     }
 
     @Test
@@ -175,7 +175,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .limit(10)
         ;
 
-        print(table.toSelectStmt());
+        exprAssert(table.toSelectStmt());
 
         var table1 = new Query();
         table1
@@ -187,7 +187,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .limit(10, 5)
         ;
 
-        print(table1.toSelectStmt());
+        exprAssert(table1.toSelectStmt());
     }
 
     @Test
@@ -205,7 +205,7 @@ public class SelectStmtTest extends MysqlGrammarTest {
                     query.whereExists(orders);
                 });
 
-        print(users.toSelectStmt());
+        exprAssert(users.toSelectStmt());
     }
 
     @Test
@@ -234,6 +234,6 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 query.where("user_id", ">", 123);
             });
 
-        print(order3.toSelectStmt());
+        exprAssert(order3.toSelectStmt());
     }
 }

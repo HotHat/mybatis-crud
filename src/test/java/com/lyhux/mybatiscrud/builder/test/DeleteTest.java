@@ -18,7 +18,7 @@ public class DeleteTest extends MysqlGrammarTest {
             .toDeleteStmt()
         ;
 
-        print(delete);
+        exprAssert(delete);
     }
 
 }

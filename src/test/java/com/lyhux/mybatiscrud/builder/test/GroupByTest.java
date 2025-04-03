@@ -16,6 +16,6 @@ public class GroupByTest extends MysqlGrammarTest {
                 })
         ;
 
-        print(groupBy);
+        exprAssert(groupBy);
     }
 }

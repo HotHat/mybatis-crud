@@ -28,7 +28,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         expr.where("id", "123");
 
         var result = grammar.compile(expr);
-        print(result);
+        exprAssert(result);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .where("l0_w2", "l0_w2");
 
         var result = grammar.compile(expr);
-        print(result);
+        exprAssert(result);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         ;
 
         var result = grammar.compile(expr);
-        print(result);
+        exprAssert(result);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         ;
 
         var result = grammar.compile(expr);
-        print(result);
+        exprAssert(result);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             ;
 
         var result = grammar.compile(expr);
-        print(result);
+        exprAssert(result);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         var expr = new WhereExpr();
         expr.where("id", 123).whereIn("id", List.of("id1", "id2")).whereIn("name", List.of("name1", "name2"));
 
-        print(expr);
+        exprAssert(expr);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
 
         expr.whereColumn("orders.user_id", "users.id");
 
-        print(expr);
+        exprAssert(expr);
     }
 
     @Test
@@ -136,7 +136,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
         var expr = new WhereExpr();
         expr.whereExists(orders);
 
-        print(expr);
+        exprAssert(expr);
     }
 
     @Test
@@ -155,7 +155,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .where("BigDecimal", new BigDecimal("10000.999"))
         ;
 
-        print(expr);
+        exprAssert(expr);
     }
 
     @Test
@@ -166,7 +166,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .orWhereNull("deleted_at")
             .orWhereNotNull("deleted_at")
             ;
-        print(expr);
+        exprAssert(expr);
     }
 
     @Test
@@ -185,7 +185,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .whereIn("BigDecimal", new BigDecimal("8888.888"), new BigDecimal("9999.99"))
         ;
 
-        print(expr);
+        exprAssert(expr);
 
 
     }
@@ -206,7 +206,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .orWhereIn("BigDecimal", new BigDecimal("8888.888"), new BigDecimal("9999.99"))
         ;
 
-        print(expr);
+        exprAssert(expr);
 
     }
 
@@ -217,7 +217,7 @@ public class WhereClauseExprTest extends MysqlGrammarTest {
             .whereRaw("id=? and name=?", List.of(TypeValue.of("1"), TypeValue.of("name")))
         ;
 
-        print(expr);
+        exprAssert(expr);
 
     }
 

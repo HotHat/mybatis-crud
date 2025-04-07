@@ -103,12 +103,16 @@ public abstract class Grammar {
             }
             case BinaryExpr b -> {
                 // column
-                sb.append(compile(b.getColumn()));
+                String column = compile(b.getColumn());
+                sb.append(column);
                 // operator
-                sb.append(" ").append(b.getOperator());
+                if (!column.isEmpty()) {
+                    sb.append(" ");
+                }
+                sb.append(b.getOperator());
 
                 if (b.isShowBrace()) {
-                    sb.append("(");
+                    sb.append(" ").append("(");
                 }
                 // value
                 var value = b.getValue();
@@ -450,20 +454,29 @@ public abstract class Grammar {
         return new ExprResult(sb.toString(), bindings);
     }
 
-    public String compile(DuplicateAssignExpr expr) {
-        return compile(expr.column()) + '=' + compile(expr.value());
+    public ExprResult compile(DuplicateAssignExpr expr) {
+
+        var column = compile(expr.column());
+        var result = compile(expr.value().expr());
+        var bindings = new ArrayList<TypeValue<?>>(expr.value().bindings());
+        return new ExprResult(column + '=' + result, bindings);
     }
 
-    public String compile(DuplicateAssignListExpr expr) {
+    public ExprResult compile(DuplicateAssignListExpr expr) {
         var sb = new StringBuilder();
         var assigns = expr.getAssignExpr();
+        var bindings = new ArrayList<TypeValue<?>>();
+        ExprResult result;
+
         int count = 0;
         for (var exp : assigns) {
-            sb.append(compile(exp));
+            result = compile(exp);
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
             if (++count < assigns.size()) { sb.append(", "); }
         }
 
-        return sb.toString();
+        return new ExprResult(sb.toString(), bindings);
     }
 
     public ExprResult compile(AssignListExpr expr) {
@@ -494,7 +507,7 @@ public abstract class Grammar {
 
     public ExprResult compile(InsertStmt stmt) {
         var sb = new StringBuilder();
-        var bindings = new ArrayList<TypeValue<?>>();
+        ExprResult result;
 
         var tableRef = stmt.tableRef();
         var columns = stmt.columns();
@@ -502,12 +515,16 @@ public abstract class Grammar {
         var assigns = stmt.assigns();
 
         sb.append("INSERT INTO ");
-        sb.append(compile(tableRef));
+        result = compile(tableRef);
+        sb.append(result.statement());
+        var bindings = new ArrayList<TypeValue<?>>(result.bindings());
         //
         if (!columns.isEmpty()) {
+            result = compile(columns);
             sb.append(" (");
-            sb.append(compile(columns));
-            sb.append(" )");
+            sb.append(result.statement());
+            sb.append(")");
+            bindings.addAll(result.bindings());
         }
         //
         sb.append(" VALUES ");
@@ -515,7 +532,7 @@ public abstract class Grammar {
         int count = 0;
         for (var val : valueGroup) {
             sb.append("(");
-            var result = compile(val);
+            result = compile(val);
             sb.append(result.statement());
             bindings.addAll(result.bindings());
             sb.append(")");
@@ -525,7 +542,9 @@ public abstract class Grammar {
 
         if (!assigns.isEmpty()) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
-            sb.append(compile(assigns));
+            result = compile(assigns);
+            sb.append(result.statement());
+            bindings.addAll(result.bindings());
         }
 
         return new ExprResult(sb.toString(), bindings);

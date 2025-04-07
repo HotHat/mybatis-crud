@@ -6,6 +6,8 @@ import com.lyhux.mybatiscrud.builder.grammar.insert.DuplicateAssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.insert.ValueGroupExpr;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class InsertTest extends MysqlGrammarTest {
     @Test
     public void testValueExpr() {
@@ -47,18 +49,19 @@ public class InsertTest extends MysqlGrammarTest {
     public void testAssignListExpr() {
         var lst = new DuplicateAssignListExpr();
 
-        lst.add(new DuplicateAssignExpr(new EscapedStr("name"), new EscapedStr("ab.name")));
-        lst.add(new DuplicateAssignExpr(new EscapedStr("name2"), new EscapedStr("ab.name2")));
+        lst.add(new DuplicateAssignExpr(new EscapedStr("name"), new BindingValue<>(new EscapedStr("ab.name"))));
+        lst.add(new DuplicateAssignExpr(new EscapedStr("name2"), new BindingValue<>(new EscapedStr("ab.name2"))));
 
         exprAssert(lst);
     }
 
     @Test
     public void testInsertExpr() {
-        var builder = new Query();
+        var query = new Query();
 
         // var insert = new InsertStmt(new EscapedStr("users"));
-        builder
+        query
+                .table("users")
                 .columns("id", "name", "age", "gender")
                 .values((group) -> {
                     group
@@ -79,15 +82,31 @@ public class InsertTest extends MysqlGrammarTest {
 
                 .onUpdate((update) -> {
                     update
-                            .add("a1", "b1")
-                            .add("a1", "b1")
-                            .add("a1", "b1");
+                        .addRaw("a1", "a1+1")
+                        .addColumn("b1", "b1")
+                        .addColumn("c1", "c1")
+                        .add("r1", "888")
+                    ;
                 });
 
 
-        var insert = builder.toInsertStmt();
+        var insert = query.toInsertStmt();
 
-        exprAssert(insert);
+        exprAssert(insert,
+            new ExprResult(
+                "INSERT INTO `users` (`id`, `name`, `age`, `gender`) VALUES (?, ?, ?, ?), (?, 'raw name', ?, ?) ON DUPLICATE KEY UPDATE `a1`=a1+1, `b1`=`b1`, `c1`=`c1`, `r1`=?",
+                List.of(
+                    TypeValue.of("1"),
+                    TypeValue.of("name1"),
+                    TypeValue.of("12"),
+                    TypeValue.of("male"),
+                    TypeValue.of(2),
+                    TypeValue.of(15),
+                    TypeValue.of("female"),
+                    TypeValue.of("888")
+                )
+            )
+        );
 
     }
 }

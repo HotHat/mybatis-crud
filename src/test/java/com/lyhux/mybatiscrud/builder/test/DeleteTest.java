@@ -1,7 +1,11 @@
 package com.lyhux.mybatiscrud.builder.test;
 
+import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
 import com.lyhux.mybatiscrud.builder.grammar.Query;
+import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 public class DeleteTest extends MysqlGrammarTest {
     @Test
@@ -18,7 +22,14 @@ public class DeleteTest extends MysqlGrammarTest {
             .toDeleteStmt()
         ;
 
-        exprAssert(delete);
+        exprAssert(delete,
+            new ExprResult(
+                "DELETE FROM `user` WHERE `id` = ? ORDER BY `id` DESC LIMIT 10",
+                List.of(
+                    TypeValue.of(5)
+                )
+            )
+        );
     }
 
 }

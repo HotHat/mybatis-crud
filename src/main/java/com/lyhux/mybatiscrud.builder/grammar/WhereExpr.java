@@ -470,11 +470,11 @@ public final class WhereExpr implements WhereClauseExpr {
 
     //
     public WhereExpr whereExists(SelectStmt stmt) {
-        var expr = new WhereExpr(true);
+        var expr = new WhereExpr(false);
 
         expr.add(new BinaryExpr(
                 new RawStr(""),
-                "exists",
+                "EXISTS",
                 new BindingValue<>(stmt),
                 true
         ), "AND");

@@ -71,10 +71,12 @@ public class MysqlGrammarTest {
         System.out.println(result.bindings());
     }
 
-    public void exprAssert(SelectStmt stmt) {
+    public void exprAssert(SelectStmt stmt, ExprResult expected) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
+
+        Assertions.assertEquals(expected, result);
     }
 
     public void exprAssert(GroupByExpr stmt) {
@@ -115,10 +117,11 @@ public class MysqlGrammarTest {
         System.out.println(result);
     }
 
-    public void exprAssert(InsertStmt stmt) {
+    public void exprAssert(InsertStmt stmt, ExprResult expected) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
+        Assertions.assertEquals(expected, result);
     }
 
     public void exprAssert(com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr stmt) {
@@ -133,10 +136,11 @@ public class MysqlGrammarTest {
         System.out.println(result.bindings());
     }
 
-    public ExprResult exprAssert(DeleteStmt stmt) {
+    public void exprAssert(DeleteStmt stmt, ExprResult expected) {
         var result = grammar.compile(stmt);
         System.out.println(result.statement());
         System.out.println(result.bindings());
-        return result;
+
+        Assertions.assertEquals(expected, result);
     }
 }

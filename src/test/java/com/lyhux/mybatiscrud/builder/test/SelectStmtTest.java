@@ -3,11 +3,14 @@ package com.lyhux.mybatiscrud.builder.test;
 import com.lyhux.mybatiscrud.builder.grammar.ExprResult;
 import com.lyhux.mybatiscrud.builder.grammar.Query;
 import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
+import com.lyhux.mybatiscrud.builder.vendor.Grammar;
+import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class SelectStmtTest extends MysqlGrammarTest {
+public class SelectStmtTest {
+    static final Grammar mysqlGrammar = new MysqlGrammar();
     @Test
     public void testSimple() {
         var builder = new Query();
@@ -21,15 +24,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        exprAssert(
+        G.assertEquals(
+            mysqlGrammar,
             builder.toSelectStmt(),
-            new ExprResult(
                 "SELECT * FROM `users` WHERE `id` = ? AND `username` = ?",
                 List.of(
                     TypeValue.of(123),
                     TypeValue.of("test")
                 )
-            )
             );
     }
 
@@ -43,12 +45,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .from(table.toSelectStmt(), "tb1")
         ;
 
-        exprAssert(builder.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM (SELECT * FROM `users` WHERE `id` > ?) AS tb1",
-                List.of(
-                    TypeValue.of(123)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            builder.toSelectStmt(),
+            "SELECT * FROM (SELECT * FROM `users` WHERE `id` > ?) AS tb1",
+            List.of(
+                TypeValue.of(123)
             )
         );
     }
@@ -65,12 +67,10 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "users.id", "=", "orders.user_id")
         ;
 
-        exprAssert(builder.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` INNER JOIN `orders` ON `users`.`id` = `orders`.`user_id`",
-                List.of(
-                )
-            )
+        G.assertEquals(
+            mysqlGrammar,
+            builder.toSelectStmt(),
+            "SELECT * FROM `users` INNER JOIN `orders` ON `users`.`id` = `orders`.`user_id`"
         );
     }
 
@@ -88,12 +88,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
                })
         ;
 
-        exprAssert(selector.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` INNER JOIN `contacts` ON (`users`.`id` = `contacts`.`user_id` AND `users`.`id` = `customs`.`user_id` AND `contacts`.`user_id` > ?)",
-                List.of(
-                    TypeValue.of(5)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            selector.toSelectStmt(),
+            "SELECT * FROM `users` INNER JOIN `contacts` ON (`users`.`id` = `contacts`.`user_id` AND `users`.`id` = `customs`.`user_id` AND `contacts`.`user_id` > ?)",
+            List.of(
+                TypeValue.of(5)
             )
         );
     }
@@ -121,14 +121,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
             })
         ;
 
-        exprAssert(selector.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` INNER JOIN (SELECT `user_id` FROM `posts` WHERE `is_published` = ? GROUP BY `user_id`) AS latest_posts ON (`users`.`id` = `latest_posts`.`user_id`) INNER JOIN (SELECT `user_id` FROM `posts` WHERE `is_published` = ? GROUP BY `user_id`) AS latest_posts ON (`users`.`id` = `latest_posts`.`user_id`) WHERE `users`.`id` > ?",
-                List.of(
-                    TypeValue.of(1),
-                    TypeValue.of(1),
-                    TypeValue.of(5)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            selector.toSelectStmt(),
+            "SELECT * FROM `users` INNER JOIN (SELECT `user_id` FROM `posts` WHERE `is_published` = ? GROUP BY `user_id`) AS latest_posts ON (`users`.`id` = `latest_posts`.`user_id`) INNER JOIN (SELECT `user_id` FROM `posts` WHERE `is_published` = ? GROUP BY `user_id`) AS latest_posts ON (`users`.`id` = `latest_posts`.`user_id`) WHERE `users`.`id` > ?",
+            List.of(
+                TypeValue.of(1),
+                TypeValue.of(1),
+                TypeValue.of(5)
             )
         );
     }
@@ -145,12 +145,10 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .leftJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        exprAssert(builder.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` LEFT JOIN `orders` ON `users`.`id` = `orders`.`user_id`",
-                List.of(
-                )
-            )
+        G.assertEquals(
+            mysqlGrammar,
+            builder.toSelectStmt(),
+            "SELECT * FROM `users` LEFT JOIN `orders` ON `users`.`id` = `orders`.`user_id`"
         );
     }
 
@@ -167,12 +165,10 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .rightJoin("orders", "users.id", "=", "orders.user_id")
         ;
 
-        exprAssert(builder.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` LEFT JOIN `orders` ON `users`.`id` = `orders`.`user_id` RIGHT JOIN `orders` ON `users`.`id` = `orders`.`user_id`",
-                List.of(
-                )
-            )
+        G.assertEquals(
+            mysqlGrammar,
+            builder.toSelectStmt(),
+            "SELECT * FROM `users` LEFT JOIN `orders` ON `users`.`id` = `orders`.`user_id` RIGHT JOIN `orders` ON `users`.`id` = `orders`.`user_id`"
         );
     }
 
@@ -188,12 +184,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .join("orders", "tb1.id", "=", "orders.user_id")
         ;
 
-        exprAssert(builder.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM (SELECT * FROM `users` WHERE `id` > ?) AS tb1 INNER JOIN `orders` ON `tb1`.`id` = `orders`.`user_id`",
-                List.of(
-                    TypeValue.of(123)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            builder.toSelectStmt(),
+            "SELECT * FROM (SELECT * FROM `users` WHERE `id` > ?) AS tb1 INNER JOIN `orders` ON `tb1`.`id` = `orders`.`user_id`",
+            List.of(
+                TypeValue.of(123)
             )
         );
     }
@@ -212,14 +208,14 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 })
         ;
 
-        exprAssert(table.toSelectStmt(),
-            new ExprResult(
+        G.assertEquals(
+            mysqlGrammar,
+            table.toSelectStmt(),
                 "SELECT `role`, `type`, count(*) AS cnt FROM `users` WHERE `id` > ? GROUP BY `role`, `type` HAVING `cnt` > ?",
                 List.of(
                     TypeValue.of(123),
                     TypeValue.of(456)
                 )
-            )
         );
     }
 
@@ -234,12 +230,12 @@ public class SelectStmtTest extends MysqlGrammarTest {
 
         ;
 
-        exprAssert(table.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` WHERE `id` > ? ORDER BY `id` DESC, `name` ASC",
-                List.of(
-                    TypeValue.of(123)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            table.toSelectStmt(),
+            "SELECT * FROM `users` WHERE `id` > ? ORDER BY `id` DESC, `name` ASC",
+            List.of(
+                TypeValue.of(123)
             )
         );
     }
@@ -253,11 +249,11 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .limit(10)
         ;
 
-        exprAssert(table.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` ORDER BY `name` ASC LIMIT 10",
-                List.of(
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            table.toSelectStmt(),
+            "SELECT * FROM `users` ORDER BY `name` ASC LIMIT 10",
+            List.of(
             )
         );
 
@@ -271,12 +267,10 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 .limit(10, 5)
         ;
 
-        exprAssert(table1.toSelectStmt(),
-            new ExprResult(
-                "SELECT `user`.`id`, `user`.`name`, `orders`.`id` AS `order_id`, orders.no AS order_no FROM (`users`, `orders` AS `ord`) ORDER BY `name` ASC LIMIT 10 OFFSET 5",
-                List.of(
-                )
-            )
+        G.assertEquals(
+            mysqlGrammar,
+            table1.toSelectStmt(),
+            "SELECT `user`.`id`, `user`.`name`, `orders`.`id` AS `order_id`, orders.no AS order_no FROM (`users`, `orders` AS `ord`) ORDER BY `name` ASC LIMIT 10 OFFSET 5"
         );
     }
 
@@ -295,12 +289,10 @@ public class SelectStmtTest extends MysqlGrammarTest {
                     query.whereExists(orders);
                 });
 
-        exprAssert(users.toSelectStmt(),
-            new ExprResult(
-                "SELECT * FROM `users` WHERE EXISTS (SELECT 1 FROM `orders` WHERE `orders`.`user_id` = `users`.`id`)",
-                List.of(
-                )
-            )
+        G.assertEquals(
+            mysqlGrammar,
+            users.toSelectStmt(),
+            "SELECT * FROM `users` WHERE EXISTS (SELECT 1 FROM `orders` WHERE `orders`.`user_id` = `users`.`id`)"
         );
     }
 
@@ -330,14 +322,16 @@ public class SelectStmtTest extends MysqlGrammarTest {
                 query.where("user_id", ">", 123);
             });
 
-        exprAssert(order3.toSelectStmt(),
-            new ExprResult(
-                "(SELECT * FROM `users` WHERE `user_id` > ?) UNION (SELECT 1 FROM `orders` WHERE `orders`.`user_id` = `users`.`id` AND (`orders`.`order_id` = `orders`.`id`)) UNION (SELECT * FROM `users` WHERE `user_id` > ?)",
-                List.of(
-                    TypeValue.of(123),
-                    TypeValue.of(456)
-                )
+        G.assertEquals(
+            mysqlGrammar,
+            order3.toSelectStmt(),
+            "(SELECT * FROM `users` WHERE `user_id` > ?) UNION (SELECT 1 FROM `orders` WHERE `orders`.`user_id` = `users`.`id` AND (`orders`.`order_id` = `orders`.`id`)) UNION (SELECT * FROM `users` WHERE `user_id` > ?)",
+            List.of(
+                TypeValue.of(123),
+                TypeValue.of(456)
             )
         );
     }
+
+
 }

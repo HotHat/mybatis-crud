@@ -3,9 +3,15 @@ package com.lyhux.mybatiscrud.builder.test;
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
+import com.lyhux.mybatiscrud.builder.vendor.Grammar;
+import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.Test;
 
-public class UpdateTest extends MysqlGrammarTest {
+import java.util.List;
+
+public class UpdateTest {
+    static final Grammar mysqlGrammar = new MysqlGrammar();
+
     @Test
     public void testAssign() {
         var assign = new AssignListExpr();
@@ -15,7 +21,13 @@ public class UpdateTest extends MysqlGrammarTest {
                 new EscapedStr("column"),
                 new BindingValue<>(new RawStr("?"), TypeValue.of(1234))));
 
-        exprAssert(assign);
+        // exprAssert(assign);
+        G.assertEquals(
+            mysqlGrammar,
+            assign,
+            "",
+            List.of()
+        );
     }
 
     @Test
@@ -34,7 +46,12 @@ public class UpdateTest extends MysqlGrammarTest {
             .toUpdateStmt()
         ;
 
-       exprAssert(update);
+        G.assertEquals(
+            mysqlGrammar,
+            update,
+            "",
+            List.of()
+        );
     }
 
     @Test
@@ -56,6 +73,11 @@ public class UpdateTest extends MysqlGrammarTest {
             .toUpdateStmt()
             ;
 
-        exprAssert(update);
+        G.assertEquals(
+            mysqlGrammar,
+            update,
+            "",
+            List.of()
+        );
     }
 }

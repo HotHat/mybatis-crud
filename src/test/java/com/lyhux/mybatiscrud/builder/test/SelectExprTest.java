@@ -1,22 +1,23 @@
 package com.lyhux.mybatiscrud.builder.test;
 
 import com.lyhux.mybatiscrud.builder.grammar.*;
+import com.lyhux.mybatiscrud.builder.vendor.Grammar;
+import com.lyhux.mybatiscrud.builder.vendor.MysqlGrammar;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class SelectExprTest extends MysqlGrammarTest {
+public class SelectExprTest {
+    static final Grammar mysqlGrammar = new MysqlGrammar();
 
     @Test
     public void testEmptySelectExpr() {
         var expr = new ColumnExpr();
 
-        exprAssert(
+        G.assertEquals(
+            mysqlGrammar,
             expr,
-            new ExprResult(
-                "*",
-                List.of()
-            )
+            "*"
         );
     }
 
@@ -28,10 +29,11 @@ public class SelectExprTest extends MysqlGrammarTest {
                 .add(new EscapedStr("orders.id AS order_id"))
         ;
 
-        exprAssert(expr, new ExprResult(
-            "version(), `id` AS `user_id`, `orders`.`id` AS `order_id`",
-            List.of()
-        ));
+        G.assertEquals(
+            mysqlGrammar,
+            expr,
+            "version(), `id` AS `user_id`, `orders`.`id` AS `order_id`"
+        );
     }
 
     @Test
@@ -40,12 +42,11 @@ public class SelectExprTest extends MysqlGrammarTest {
         var expr = new ColumnExpr();
         expr.add(new RawStr("price * ? as price_with_tax"), TypeValue.of("1.0825"));
 
-        exprAssert(
+        G.assertEquals(
+            mysqlGrammar,
             expr,
-            new ExprResult(
-                "price * ? as price_with_tax",
-                List.of( TypeValue.of("1.0825"))
-            )
+            "price * ? as price_with_tax",
+            List.of( TypeValue.of("1.0825"))
         );
     }
 

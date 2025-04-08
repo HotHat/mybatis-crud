@@ -1,9 +1,6 @@
 package com.lyhux.mybatiscrud.builder.grammar.insert;
 
-import com.lyhux.mybatiscrud.builder.grammar.BindingValue;
-import com.lyhux.mybatiscrud.builder.grammar.EscapedStr;
-import com.lyhux.mybatiscrud.builder.grammar.RawStr;
-import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
+import com.lyhux.mybatiscrud.builder.grammar.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -13,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ValueGroupExpr {
+public class ValueGroupExpr implements Expr {
     List<BindingValue<?>> valueExpr;
 
     public ValueGroupExpr() {

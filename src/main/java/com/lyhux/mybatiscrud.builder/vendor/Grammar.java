@@ -9,6 +9,7 @@ import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Grammar {
     public abstract String getEscapeChars();
@@ -184,6 +185,7 @@ public abstract class Grammar {
 
         var refs = expr.getTableRefs();
 
+        sb.append("FROM ");
         var bindings = new ArrayList<TypeValue<?>>();
         if (refs.size() > 1) {
             sb.append("(");
@@ -218,9 +220,11 @@ public abstract class Grammar {
         var bindings = new ArrayList<>(result.bindings());
 
         for (var exp : joined) {
-            result = compile(exp);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            sb.append(" ");
+            compileExpr(sb, bindings, exp);
+            // result = compile(exp);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
         }
 
 
@@ -231,7 +235,7 @@ public abstract class Grammar {
     public ExprResult compile(TableFactorExpr expr) {
         switch (expr) {
             case TableNameExpr t -> {
-                return new ExprResult(compile(t), new ArrayList<>());
+                return compile(t);
             }
             case TableSubExpr tf -> {
                 return compile(tf);
@@ -256,14 +260,14 @@ public abstract class Grammar {
         return new ExprResult(sb.toString(), r);
     }
 
-    public String compile(TableNameExpr expr) {
+    public ExprResult compile(TableNameExpr expr) {
         var sb = new StringBuilder();
         sb.append(compile(expr.getTableName()));
         if (!expr.getAlias().getValue().isBlank()) {
             sb.append(" AS ")
               .append(compile(expr.getAlias()));
         }
-        return sb.toString();
+        return new ExprResult(sb.toString(), List.of());
     }
 
     public ExprResult compile(TableJoinedExpr expr) {
@@ -273,7 +277,7 @@ public abstract class Grammar {
         var factor = expr.getTableFactor();
         var condition = expr.getCondition();
 
-        sb.append(" ").append(joined).append(" JOIN ");
+        sb.append(joined).append(" JOIN ");
 
         var result = compile(factor);
         sb.append(result.statement());
@@ -306,43 +310,43 @@ public abstract class Grammar {
         }
 
         //
-        ExprResult result;
+        // ExprResult result;
+        var bindings = new ArrayList<TypeValue<?>>();
 
         // select
-        result = compile(selectExpr);
-        sb.append("SELECT ")
-          .append(result.statement());
-
-        var bindings = new ArrayList<TypeValue<?>>(result.bindings());
-
+        sb.append("SELECT ");
+        compileExpr(sb, bindings, selectExpr);
 
         // from
         if (!tableRefs.isEmpty()) {
-            sb.append(" FROM ");
-            result = compile(tableRefs);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            sb.append(" ");
+            // result = compile(tableRefs);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, tableRefs);
         }
 
         // where
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
-            result = compile(whereExpr);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            // result = compile(whereExpr);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, whereExpr);
         }
 
         // group by having
         if (!groupByExpr.isEmpty()) {
-            sb.append(" GROUP BY ");
-            result = compile(groupByExpr);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            sb.append(" ");
+            // result = compile(groupByExpr);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, groupByExpr);
         }
 
         // order by
         if (!orderByExpr.isEmpty()) {
-            sb.append(" ORDER BY ").append(compile(orderByExpr));
+            sb.append(" ").append(compile(orderByExpr).statement());
         }
 
         // union bracket
@@ -355,20 +359,21 @@ public abstract class Grammar {
             sb.append(" ").append(union.type()).append(" ");
 
             sb.append("(");
-            result = compile(union.selectStmt());
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            // result = compile(union.selectStmt());
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, union.selectStmt());
             sb.append(")");
         }
 
         // limit
         if (limitExpr != null) {
-            sb.append(" LIMIT ").append(compile(limitExpr));
+            sb.append(" ").append(compile(limitExpr).statement());
         }
 
         // for
         if (forExpr != null) {
-            sb.append(" FOR ").append(compile(forExpr));
+            sb.append(" ").append(compile(forExpr).statement());
         }
 
 
@@ -380,6 +385,7 @@ public abstract class Grammar {
         var columns = expr.getColumns();
         var having = expr.getHaving();
 
+        sb.append("GROUP BY ");
         if (!columns.isEmpty()) {
             int count = 0;
             for (var exp : columns) {
@@ -391,19 +397,21 @@ public abstract class Grammar {
         var bindings = new ArrayList<TypeValue<?>>();
         if (!having.isEmpty()) {
             sb.append(" HAVING ");
-            var result = compile(having.getExpr());
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            // var result = compile(having.getExpr());
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, having.getExpr());
         }
 
         return new ExprResult(sb.toString(), bindings);
     }
 
-    public String compile(OrderByExpr expr) {
+    public ExprResult compile(OrderByExpr expr) {
         var sb = new StringBuilder();
         var columns = expr.getItems();
 
         if (!columns.isEmpty()) {
+            sb.append("ORDER BY ");
             int count = 0;
             for (var exp : columns) {
                 sb.append(compile(exp.column())).append(" ").append(exp.order().toUpperCase());
@@ -411,18 +419,25 @@ public abstract class Grammar {
             }
         }
 
-        return sb.toString();
+        return new ExprResult(sb.toString(), List.of());
     }
 
-    public String compile(LimitExpr expr) {
-        return expr.rowCount() + (expr.offset() > 0 ? " OFFSET " + expr.offset() : "");
+    public ExprResult compile(LimitExpr expr) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LIMIT ").append(expr.rowCount());
+        if (expr.offset() > 0) {
+            sb.append(" OFFSET ").append(expr.offset());
+        }
+
+        return new ExprResult(sb.toString(), List.of());
     }
 
-    public String compile(ForExpr expr) {
+    public ExprResult compile(ForExpr expr) {
         var sb = new StringBuilder();
         var tableNames = expr.getTableNames();
         var mode = expr.getModel();
 
+        sb.append("FOR ");
         sb.append(mode.toUpperCase());
         if (!tableNames.isEmpty()) {
             sb.append(" OF ");
@@ -433,7 +448,7 @@ public abstract class Grammar {
             }
         }
 
-        return sb.toString();
+        return new ExprResult(sb.toString(), List.of());
     }
 
     public ExprResult compile(ValueGroupExpr expr) {
@@ -470,9 +485,10 @@ public abstract class Grammar {
 
         int count = 0;
         for (var exp : assigns) {
-            result = compile(exp);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            // result = compile(exp);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, exp);
             if (++count < assigns.size()) { sb.append(", "); }
         }
 
@@ -494,9 +510,10 @@ public abstract class Grammar {
                 sb.append(escapeRawStr(value.expr()));
                 bindings.addAll(value.bindings());
             } else  {
-                var result = compile(value.stmt());
-                sb.append(result.statement());
-                bindings.addAll(result.bindings());
+                // var result = compile(value.stmt());
+                // sb.append(result.statement());
+                // bindings.addAll(result.bindings());
+                compileExpr(sb, bindings, value.stmt());
             }
 
             if (++count < assigns.size()) { sb.append(", "); }
@@ -532,9 +549,10 @@ public abstract class Grammar {
         int count = 0;
         for (var val : valueGroup) {
             sb.append("(");
-            result = compile(val);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, val);
+            // result = compile(val);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
             sb.append(")");
 
             if (++count < valueGroup.size()) { sb.append(", "); }
@@ -542,12 +560,37 @@ public abstract class Grammar {
 
         if (!assigns.isEmpty()) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
-            result = compile(assigns);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, assigns);
+            // result = compile(assigns);
+            // sb.append(result.statement());
+            // bindings.addAll(result.bindings());
         }
 
         return new ExprResult(sb.toString(), bindings);
+    }
+
+    public ExprResult compile(Expr expr) {
+        return switch (expr) {
+            case WhereClauseExpr w -> compile(w);
+            case ColumnExpr c -> compile(c);
+            case TableRefsExpr trs -> compile(trs);
+            case TableRefExpr tr -> compile(tr);
+            // before TableFactorExpr
+            case TableSubExpr ts -> compile(ts);
+            case TableNameExpr tn -> compile(tn);
+            case TableFactorExpr tf -> compile(tf);
+            case TableJoinedExpr tj -> compile(tj);
+            case GroupByExpr gb -> compile(gb);
+            case OrderByExpr ob -> compile(ob);
+            case LimitExpr lm -> compile(lm);
+            case ForExpr fr -> compile(fr);
+            case ValueGroupExpr vg -> compile(vg);
+            case DuplicateAssignListExpr dal -> compile(dal);
+            case DuplicateAssignExpr da -> compile(da);
+            case AssignListExpr al -> compile(al);
+
+            default -> throw new IllegalStateException("Unexpected value: " + expr);
+        };
     }
 
     public ExprResult compile(UpdateStmt stmt) {
@@ -634,5 +677,17 @@ public abstract class Grammar {
             case UpdateStmt update -> compile(update);
             case DeleteStmt delete -> compile(delete);
         };
+    }
+
+    private void compileExpr(StringBuilder sb, List<TypeValue<?>> bindings, Expr expr) {
+       var result = compile(expr);
+       sb.append(result.statement());
+       bindings.addAll(result.bindings());
+    }
+
+    private void compileExpr(StringBuilder sb, List<TypeValue<?>> bindings, Stmt stmt) {
+        var result = compile(stmt);
+        sb.append(result.statement());
+        bindings.addAll(result.bindings());
     }
 }

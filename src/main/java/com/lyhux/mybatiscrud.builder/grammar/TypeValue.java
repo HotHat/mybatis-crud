@@ -45,9 +45,10 @@ public record TypeValue<T>(JDBCType type, T value) {
         return new TypeValue<>(JDBCType.TIMESTAMP, timestamp);
     }
 
-    public static TypeValue<Timestamp> of(LocalDateTime localDateTime) {
-        var zoneId = ZoneId.systemDefault();
-        return of(localDateTime, zoneId);
+    public static TypeValue<LocalDateTime> of(LocalDateTime localDateTime) {
+        // var zoneId = ZoneId.systemDefault();
+        // return of(localDateTime, zoneId);
+        return of(JDBCType.TIMESTAMP, localDateTime);
     }
 
     public static TypeValue<Timestamp> of(LocalDateTime localDateTime, ZoneId zoneId) {
@@ -76,7 +77,7 @@ public record TypeValue<T>(JDBCType type, T value) {
             case Date date -> of(date);
             case Time time -> of(time);
             case Timestamp timestamp -> of(timestamp);
-            case LocalDateTime localDateTime -> of(localDateTime);
+            case LocalDateTime localDateTime -> of(JDBCType.TIMESTAMP, localDateTime);
             case BigDecimal bigDecimal -> of(bigDecimal);
             case null -> of();
             default -> of(value.toString());

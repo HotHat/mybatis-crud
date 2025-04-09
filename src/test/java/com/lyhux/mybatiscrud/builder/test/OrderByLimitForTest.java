@@ -24,7 +24,7 @@ public class OrderByLimitForTest {
         G.assertEquals(
             mysqlGrammar,
             orderBy,
-            "`id` DESC, `name` ASC",
+            "ORDER BY `id` DESC, `name` ASC",
             List.of()
         );
     }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class TableRefExprTest extends MysqlGrammarTest {
+public class TableRefExprTest {
     static final Grammar mysqlGrammar = new MysqlGrammar();
 
     @Test

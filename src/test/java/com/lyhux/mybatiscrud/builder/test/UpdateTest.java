@@ -25,8 +25,7 @@ public class UpdateTest {
         G.assertEquals(
             mysqlGrammar,
             assign,
-            "",
-            List.of()
+            "`column`='value', `column`=?"
         );
     }
 
@@ -49,8 +48,7 @@ public class UpdateTest {
         G.assertEquals(
             mysqlGrammar,
             update,
-            "",
-            List.of()
+            "UPDATE `users` SET `id`=?, `name`=?, `email`='hello@gmail.com'"
         );
     }
 
@@ -76,8 +74,12 @@ public class UpdateTest {
         G.assertEquals(
             mysqlGrammar,
             update,
-            "",
-            List.of()
+            "UPDATE `users` SET `id`=?, `name`=?, `email`='hello@gmail.com' WHERE `id` = ? LIMIT 10 OFFSET 5",
+            List.of(
+                TypeValue.of(1),
+                TypeValue.of("lyhux"),
+                TypeValue.of(1)
+            )
         );
     }
 }

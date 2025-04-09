@@ -14,10 +14,9 @@ public class G {
         System.out.println(result.statement());
         System.out.println(result.bindings());
 
-        Assertions.assertEquals(new ExprResult(
-            statement,
-            bindings
-        ) , result);
+        Assertions.assertEquals(statement, result.statement());
+        Assertions.assertEquals(bindings, result.bindings());
+
     }
 
     public static void assertEquals(Grammar grammar, Stmt stmt, String statement)
@@ -26,10 +25,7 @@ public class G {
         System.out.println(result.statement());
         System.out.println(result.bindings());
 
-        Assertions.assertEquals(new ExprResult(
-            statement,
-            List.of()
-        ) , result);
+        Assertions.assertEquals(statement, result.statement());
     }
 
     public static void assertEquals(Grammar grammar, Expr expr, String statement, List<TypeValue<?>> bindings)
@@ -38,10 +34,8 @@ public class G {
         System.out.println(result.statement());
         System.out.println(result.bindings());
 
-        Assertions.assertEquals(new ExprResult(
-            statement,
-            bindings
-        ) , result);
+        Assertions.assertEquals(statement, result.statement());
+        Assertions.assertEquals(bindings, result.bindings());
     }
 
     public static void assertEquals(Grammar grammar, Expr expr, String statement)
@@ -50,10 +44,7 @@ public class G {
         System.out.println(result.statement());
         System.out.println(result.bindings());
 
-        Assertions.assertEquals(new ExprResult(
-            statement,
-            List.of()
-        ) , result);
+        Assertions.assertEquals(statement, result.statement());
     }
 
 

@@ -65,17 +65,6 @@ public abstract class Grammar {
 
                 boolean showBraces = w.isShowBraces();
 
-                // in group include inverse logic connect
-                // boolean includeInverse = true;
-                // String currentBool = w.getBool();
-                // for (var condition : conditions) {
-                //     var bool = switch (condition) {
-                //         case WhereExpr w1 -> w1.getBool();
-                //         case BinaryExpr b1 -> currentBool;
-                //     };
-                //     if (!bool.equals(currentBool)) { includeInverse = true; break; }
-                // }
-
                 if (showBraces) {
                     sb.append("(");
                 }
@@ -95,6 +84,7 @@ public abstract class Grammar {
                     var result = compile(condition);
                     sb.append(result.statement());
                     bindings.addAll(result.bindings());
+                    // compileExpr(sb, bindings, condition);
                 }
 
                 if (showBraces) {
@@ -107,7 +97,7 @@ public abstract class Grammar {
                 String column = compile(b.getColumn());
                 sb.append(column);
                 // operator
-                if (!column.isEmpty()) {
+                if (!column.isBlank() && !b.getOperator().isBlank()) {
                     sb.append(" ");
                 }
                 sb.append(b.getOperator());
@@ -130,9 +120,7 @@ public abstract class Grammar {
                 }
                 // is select stmt
                 else {
-                    var result = compile(value.stmt());
-                    sb.append(result.statement());
-                    bindings.addAll(result.bindings());
+                    compileExpr(sb, bindings, compile(value.stmt()));
                 }
 
                 if (b.isShowBrace()) {
@@ -193,9 +181,7 @@ public abstract class Grammar {
 
         int count = 0;
         for (var exp : refs) {
-            var result = compile(exp);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(exp));
             if (++count < refs.size()) {
                 sb.append(", ");
             }
@@ -221,10 +207,7 @@ public abstract class Grammar {
 
         for (var exp : joined) {
             sb.append(" ");
-            compileExpr(sb, bindings, exp);
-            // result = compile(exp);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(exp));
         }
 
 
@@ -281,15 +264,14 @@ public abstract class Grammar {
 
         var result = compile(factor);
         sb.append(result.statement());
-        var r = new ArrayList<>(result.bindings());
+        var bindings = new ArrayList<>(result.bindings());
 
         sb.append(" ON ");
 
-        result = compile(condition);
-        sb.append(result.statement());
-        r.addAll(result.bindings());
+        compileExpr(sb, bindings, compile(condition));
 
-        return new ExprResult(sb.toString(), r);
+
+        return new ExprResult(sb.toString(), bindings);
     }
 
     public ExprResult compile(SelectStmt stmt) {
@@ -315,33 +297,24 @@ public abstract class Grammar {
 
         // select
         sb.append("SELECT ");
-        compileExpr(sb, bindings, selectExpr);
+        compileExpr(sb, bindings, compile(selectExpr));
 
         // from
         if (!tableRefs.isEmpty()) {
             sb.append(" ");
-            // result = compile(tableRefs);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, tableRefs);
+            compileExpr(sb, bindings, compile(tableRefs));
         }
 
         // where
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
-            // result = compile(whereExpr);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, whereExpr);
+            compileExpr(sb, bindings, compile(whereExpr));
         }
 
         // group by having
         if (!groupByExpr.isEmpty()) {
             sb.append(" ");
-            // result = compile(groupByExpr);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, groupByExpr);
+            compileExpr(sb, bindings, compile(groupByExpr));
         }
 
         // order by
@@ -359,10 +332,7 @@ public abstract class Grammar {
             sb.append(" ").append(union.type()).append(" ");
 
             sb.append("(");
-            // result = compile(union.selectStmt());
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, union.selectStmt());
+            compileExpr(sb, bindings, compile(union.selectStmt()));
             sb.append(")");
         }
 
@@ -397,10 +367,7 @@ public abstract class Grammar {
         var bindings = new ArrayList<TypeValue<?>>();
         if (!having.isEmpty()) {
             sb.append(" HAVING ");
-            // var result = compile(having.getExpr());
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, having.getExpr());
+            compileExpr(sb, bindings, compile(having.getExpr()));
         }
 
         return new ExprResult(sb.toString(), bindings);
@@ -485,10 +452,7 @@ public abstract class Grammar {
 
         int count = 0;
         for (var exp : assigns) {
-            // result = compile(exp);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
-            compileExpr(sb, bindings, exp);
+            compileExpr(sb, bindings, compile(exp));
             if (++count < assigns.size()) { sb.append(", "); }
         }
 
@@ -510,10 +474,7 @@ public abstract class Grammar {
                 sb.append(escapeRawStr(value.expr()));
                 bindings.addAll(value.bindings());
             } else  {
-                // var result = compile(value.stmt());
-                // sb.append(result.statement());
-                // bindings.addAll(result.bindings());
-                compileExpr(sb, bindings, value.stmt());
+                compileExpr(sb, bindings, compile(value.stmt()));
             }
 
             if (++count < assigns.size()) { sb.append(", "); }
@@ -549,10 +510,7 @@ public abstract class Grammar {
         int count = 0;
         for (var val : valueGroup) {
             sb.append("(");
-            compileExpr(sb, bindings, val);
-            // result = compile(val);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(val));
             sb.append(")");
 
             if (++count < valueGroup.size()) { sb.append(", "); }
@@ -560,10 +518,7 @@ public abstract class Grammar {
 
         if (!assigns.isEmpty()) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
-            compileExpr(sb, bindings, assigns);
-            // result = compile(assigns);
-            // sb.append(result.statement());
-            // bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(assigns));
         }
 
         return new ExprResult(sb.toString(), bindings);
@@ -610,27 +565,23 @@ public abstract class Grammar {
         // assignment
         if (!assigns.isEmpty()) {
             sb.append(" SET ");
-            result = compile(assigns);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(assigns));
         }
 
         // where
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
-            result = compile(whereExpr);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(whereExpr));
         }
 
         if (!orderBy.isEmpty()) {
-            sb.append(" ORDER BY ");
-            sb.append(compile(orderBy));
+            sb.append(" ");
+            sb.append(compile(orderBy).statement());
         }
 
         if (limit != null) {
-            sb.append(" LIMIT ");
-            sb.append(compile(limit));
+            sb.append(" ");
+            sb.append(compile(limit).statement());
         }
 
         return new ExprResult(sb.toString(), bindings);
@@ -652,19 +603,17 @@ public abstract class Grammar {
         // where
         if (!whereExpr.isEmpty()) {
             sb.append(" WHERE ");
-            result = compile(whereExpr);
-            sb.append(result.statement());
-            bindings.addAll(result.bindings());
+            compileExpr(sb, bindings, compile(whereExpr));
         }
 
         if (!orderBy.isEmpty()) {
-            sb.append(" ORDER BY ");
-            sb.append(compile(orderBy));
+            sb.append(" ");
+            sb.append(compile(orderBy).statement());
         }
 
         if (limit != null) {
-            sb.append(" LIMIT ");
-            sb.append(compile(limit));
+            sb.append(" ");
+            sb.append(compile(limit).statement());
         }
 
         return new ExprResult(sb.toString(), bindings);
@@ -679,15 +628,9 @@ public abstract class Grammar {
         };
     }
 
-    private void compileExpr(StringBuilder sb, List<TypeValue<?>> bindings, Expr expr) {
-       var result = compile(expr);
+    private void compileExpr(StringBuilder sb, List<TypeValue<?>> bindings, ExprResult result) {
        sb.append(result.statement());
        bindings.addAll(result.bindings());
     }
 
-    private void compileExpr(StringBuilder sb, List<TypeValue<?>> bindings, Stmt stmt) {
-        var result = compile(stmt);
-        sb.append(result.statement());
-        bindings.addAll(result.bindings());
-    }
 }

@@ -255,7 +255,7 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public WhereExpr whereIn(boolean isAnd, String column, LocalDateTime... values) {
         var expr = new WhereExpr(false);
-        var bindings = new ArrayList<TypeValue<Timestamp>>();
+        var bindings = new ArrayList<TypeValue<LocalDateTime>>();
         int count = 0;
         var mark = new StringBuilder();
         mark.append("(");

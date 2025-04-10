@@ -224,20 +224,30 @@ public class SelectStmtTest {
         var table = new Query();
         table
                 .from("users")
-                .where((query) -> { query.where("id", ">", 123);})
-                .orderBy("id", "desc")
-                .orderBy("name", "asc")
+                .where((query) -> { query.where("users.id", ">", 123);})
+                .orderBy("users.id", "desc")
+                .orderBy("users.name", "asc")
 
         ;
 
         G.assertEquals(
             mysqlGrammar,
             table.toSelectStmt(),
-            "SELECT * FROM `users` WHERE `id` > ? ORDER BY `id` DESC, `name` ASC",
+            "SELECT * FROM `users` WHERE `users`.`id` > ? ORDER BY `users`.`id` DESC, `users`.`name` ASC",
             List.of(
                 TypeValue.of(123)
             )
         );
+
+        G.assertEquals(
+            mysqlGrammar.setTablePrefix("t_"),
+            table.toSelectStmt(),
+            "SELECT * FROM `t_users` WHERE `t_users`.`id` > ? ORDER BY `t_users`.`id` DESC, `t_users`.`name` ASC",
+            List.of(
+                TypeValue.of(123)
+            )
+        );
+
     }
 
     @Test

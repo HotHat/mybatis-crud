@@ -12,9 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Grammar {
+    protected String tablePrefix = "";
+
     public abstract String getEscapeChars();
 
-    public String escapeField(String field) {
+    public Grammar setTablePrefix(String prefix) {
+        tablePrefix = prefix;
+        return this;
+    }
+
+    public String escapeField(String field, boolean isTableName) {
         var sb = new StringBuilder();
         String[] asSplit = field.split("\\s+(as|AS)\\s+");
 
@@ -39,7 +46,12 @@ public abstract class Grammar {
                     continue;
                 }
 
-                sb.append(escapeChar).append(d).append(escapeChar);
+                sb.append(escapeChar);
+                if (isTableName || (innerCount == 0 && dotSplit.length == 2)) {
+                    sb.append(tablePrefix);
+                }
+                sb.append(d);
+                sb.append(escapeChar);
                 if (++innerCount < dotSplit.length) {
                     sb.append(".");
                 }
@@ -139,7 +151,7 @@ public abstract class Grammar {
                 return s.getValue();
             }
             case EscapedStr es -> {
-                return this.escapeField(es.getValue());
+                return this.escapeField(es.getValue(), es.isTableName());
             }
         }
     }

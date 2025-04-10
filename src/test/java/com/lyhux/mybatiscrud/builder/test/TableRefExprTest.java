@@ -12,14 +12,14 @@ public class TableRefExprTest {
 
     @Test
     public void testTableNameExpr() {
-        var table = new TableNameExpr(new EscapedStr("users"));
+        var table = new TableNameExpr(new EscapedStr("users", true));
         G.assertEquals(
             mysqlGrammar,
             table,
             "`users`"
         );
 
-        var tableAlias = new TableNameExpr(new EscapedStr("users"), new EscapedStr("alias"));
+        var tableAlias = new TableNameExpr(new EscapedStr("users", true), new EscapedStr("alias"));
         G.assertEquals(
             mysqlGrammar,
             tableAlias,

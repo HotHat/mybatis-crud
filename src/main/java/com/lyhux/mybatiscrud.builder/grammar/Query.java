@@ -100,7 +100,7 @@ public class Query {
         tableRefsExpr.add(
                 new TableRefExpr(
                         new TableNameExpr(
-                                new EscapedStr(table),
+                                new EscapedStr(table, true),
                                 new EscapedStr(alias))));
         return this;
     }
@@ -157,7 +157,7 @@ public class Query {
     }
 
     public Query join(String table, String leftColumn, String operator, String rightColumn, String joinType) {
-        var tableExpr = new TableNameExpr(new EscapedStr(table));
+        var tableExpr = new TableNameExpr(table);
         var whereExpr = new WhereExpr();
         whereExpr.on(leftColumn, operator, rightColumn);
         var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);
@@ -171,7 +171,7 @@ public class Query {
     }
 
     public Query join(String table, WhereNest query, String joinType) {
-        var tableExpr = new TableNameExpr(new EscapedStr(table));
+        var tableExpr = new TableNameExpr(table);
         var whereExpr = new WhereExpr();
         whereExpr.on(query);
         var joinedExpr = new TableJoinedExpr(joinType, tableExpr, whereExpr);

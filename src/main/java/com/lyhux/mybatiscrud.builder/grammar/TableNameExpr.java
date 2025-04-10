@@ -5,7 +5,7 @@ public final class TableNameExpr implements TableFactorExpr {
     ExprStr alias;
 
     public TableNameExpr(String tableName) {
-        this.tableName = new EscapedStr(tableName);
+        this.tableName = new EscapedStr(tableName, true);
         alias = new RawStr("");
     }
 

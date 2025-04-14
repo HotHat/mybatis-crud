@@ -175,6 +175,34 @@ public class WhereClauseExprTest {
     }
 
     @Test
+    public void testWhereExprWhereInQuery() {
+        var expr = new WhereExpr();
+        expr.where("id", 123)
+            .whereIn("id",
+                new Query().select("id")
+                           .from("users")
+                    .where(wrapper -> wrapper.where("id", ">", 10))
+            )
+            .orWhereIn("name",
+                new Query().select("name")
+                           .from("users")
+                           .where(wrapper -> wrapper.where("id", ">", 10))
+            )
+        ;
+
+        G.assertEquals(
+            mysqlGrammar,
+            expr,
+            "`id` = ? AND `id` IN (SELECT `id` FROM `users` WHERE `id` > ?) OR `name` IN (SELECT `name` FROM `users` WHERE `id` > ?)",
+            List.of(
+                TypeValue.of(123),
+                TypeValue.of(10),
+                TypeValue.of(10)
+            )
+        );
+    }
+
+    @Test
     public void testWhereColumn() {
         var expr = new WhereExpr();
 

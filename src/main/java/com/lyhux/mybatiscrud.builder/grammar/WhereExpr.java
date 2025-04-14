@@ -282,6 +282,21 @@ public final class WhereExpr implements WhereClauseExpr {
         return baseWhere(column, "IN", value, JDBCType.DECIMAL, false, false);
     }
 
+    public WhereExpr whereIn(String column, Query query) {
+        var expr = new WhereExpr(false);
+
+        expr.add(new BinaryExpr(
+            new EscapedStr(column),
+            "IN",
+            new BindingValue<>(query.toSelectStmt()),
+            true
+        ), "AND");
+
+        add(expr);
+
+        return this;
+    }
+
     // orWhereIn group
     public WhereExpr orWhereIn(String column, String... value) {
         return baseWhere(column, "IN", value, JDBCType.VARCHAR, false, false);
@@ -321,6 +336,21 @@ public final class WhereExpr implements WhereClauseExpr {
 
     public WhereExpr orWhereIn(String column, BigDecimal... value) {
         return baseWhere(column, "IN", value, JDBCType.DECIMAL, false, false);
+    }
+
+    public WhereExpr orWhereIn(String column, Query stmt) {
+        var expr = new WhereExpr(false);
+
+        expr.add(new BinaryExpr(
+            new EscapedStr(column),
+            "IN",
+            new BindingValue<>(stmt.toSelectStmt()),
+            true
+        ), "OR");
+
+        add(expr);
+
+        return this;
     }
 
     public WhereExpr on(String column, String operator, String value) {

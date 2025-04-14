@@ -294,16 +294,8 @@ public class Query {
     }
 
     public UpdateStmt toUpdateStmt() {
-        var refs = tableRefsExpr.getTableRefs();
-        TableRefExpr top;
-        if (refs.isEmpty()) {
-            top = new TableRefExpr(new TableNameExpr(new EscapedStr("")));
-        } else {
-            top = refs.getLast();
-        }
-
         return new UpdateStmt(
-            top,
+            tableRefsExpr,
             assignments,
             whereExpr,
            orderByExpr,
@@ -312,16 +304,8 @@ public class Query {
     }
 
     public DeleteStmt toDeleteStmt() {
-        var refs = tableRefsExpr.getTableRefs();
-        TableRefExpr top;
-        if (refs.isEmpty()) {
-            top = new TableRefExpr(new TableNameExpr(new EscapedStr("")));
-        } else {
-            top = refs.getLast();
-        }
-
         return new DeleteStmt(
-            top,
+            tableRefsExpr,
             whereExpr,
             orderByExpr,
             limitExpr

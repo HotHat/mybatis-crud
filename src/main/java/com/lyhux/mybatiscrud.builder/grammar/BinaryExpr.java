@@ -9,7 +9,7 @@ public final class BinaryExpr implements WhereClauseExpr {
   // private final List<ExprValue<?>> bindings;
 
     public BinaryExpr(ExprStr column, String operator, BindingValue<?> value) {
-        this(column,operator, value, false);
+        this(column, operator, value, false);
     }
 
     public BinaryExpr(ExprStr column, String operator, BindingValue<?> value, boolean braceValue) {

@@ -53,6 +53,28 @@ public class UpdateTest {
     }
 
     @Test
+    public void testUpdateWithJoin() {
+        var update = new Query()
+            .table("users")
+            .join("orders", wrapper -> wrapper.on("order.user_id", "=", "user.id"))
+            // update
+            .set((set) -> {
+                set
+                    .setRaw("orders.username", "users.username")
+                ;
+
+            })
+            .toUpdateStmt()
+            ;
+
+        G.assertEquals(
+            mysqlGrammar,
+            update,
+            "UPDATE `users` INNER JOIN `orders` ON `order`.`user_id` = `user`.`id` SET orders.username=users.username"
+        );
+    }
+
+    @Test
     public void testWhere() {
         var update = new Query()
             .table("users")

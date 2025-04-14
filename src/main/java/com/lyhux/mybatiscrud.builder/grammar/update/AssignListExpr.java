@@ -25,8 +25,8 @@ public class AssignListExpr implements Expr {
         return this;
     }
 
-    public AssignListExpr setRaw(String column, String value) {
-        set(new AssignExpr<>(new EscapedStr(column), new BindingValue<>(new EscapedStr(value))));
+    public AssignListExpr setRaw(String content, String value) {
+        set(new AssignExpr<>(new RawStr(content), new BindingValue<>(new RawStr(value))));
         return this;
     }
 

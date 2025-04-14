@@ -185,7 +185,7 @@ public abstract class Grammar {
 
         var refs = expr.getTableRefs();
 
-        sb.append("FROM ");
+        // sb.append("");
         var bindings = new ArrayList<TypeValue<?>>();
         if (refs.size() > 1) {
             sb.append("(");
@@ -313,7 +313,7 @@ public abstract class Grammar {
 
         // from
         if (!tableRefs.isEmpty()) {
-            sb.append(" ");
+            sb.append(" FROM ");
             compileExpr(sb, bindings, compile(tableRefs));
         }
 

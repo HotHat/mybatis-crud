@@ -366,10 +366,9 @@ public final class WhereExpr implements WhereClauseExpr {
     }
 
     public WhereExpr on(WhereNest query) {
-        where(query, true, "ON");
+        where(query, false, "ON");
         return this;
     }
-
 
     public WhereExpr where(WhereNest query) {
         return  where(query, true, "AND");

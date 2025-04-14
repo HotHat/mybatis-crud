@@ -1,7 +1,7 @@
 package com.lyhux.mybatiscrud.builder.grammar;
 
 public record DeleteStmt(
-    TableRefExpr table,
+    TableRefsExpr table,
     WhereExpr where,
     OrderByExpr orderBy,
     LimitExpr limit

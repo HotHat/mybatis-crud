@@ -13,7 +13,17 @@ import java.util.*;
 
 public class BaseModel<T> implements Model<T> {
     public void insert(T bean) {
+        insertBean(List.of(bean), false);
+    }
+
+    public void insertBatch(List<T> beans) {
+        insertBean(beans, true);
+    }
+
+    private void insertBean(List<T> beans, boolean isBatch) {
+        if (beans == null || beans.isEmpty()) { return; }
         // var type = GenericTypeResolver.resolveTypeArguments(getClass(), Model.class);
+        var bean = beans.getFirst();
 
         var info = BeanFactory.getMetaInfo(bean.getClass());
         // System.out.printf("table mate info: %s\n",  info);
@@ -25,6 +35,7 @@ public class BaseModel<T> implements Model<T> {
         ArrayList<String> columns = new ArrayList<>();
 
         try {
+            // Bean table map info
             for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -55,16 +66,18 @@ public class BaseModel<T> implements Model<T> {
                 .query(builder -> {
                     builder
                         .table(info.getTableName())
-                        .columns(columns.toArray(new String[0]))
-                        .values((wrapper) -> {
+                        .columns(columns.toArray(new String[0]));
+
+                    for (var addBean: beans) {
+                        builder.values((wrapper) -> {
                             try {
                                 for (Map.Entry<String, String> entry : info.getFieldColumnMap().entrySet()) {
                                     String key = entry.getKey();
                                     String value = entry.getValue();
                                     if (columns.contains(value)) {
-                                        Method getter = new PropertyDescriptor(key, bean.getClass()).getReadMethod();
+                                        Method getter = new PropertyDescriptor(key, addBean.getClass()).getReadMethod();
                                         // Class<?> type = getter.getReturnType();
-                                        Object val = getter.invoke(bean);
+                                        Object val = getter.invoke(addBean);
                                         wrapper.add(val);
                                     }
                                 }
@@ -72,10 +85,14 @@ public class BaseModel<T> implements Model<T> {
                                 throw new RuntimeException(e);
                             }
                         });
+                    }
                 });
 
 
-            if ((info.isPrimaryKeyInteger() || info.isPrimaryKeyLong()) && info.getKeyType() == KeyType.AUTO) {
+            if (!isBatch
+                && (info.isPrimaryKeyInteger() || info.isPrimaryKeyLong())
+                && info.getKeyType() == KeyType.AUTO)
+            {
                 Long primaryKey = query.insertGetId();
 
                 // update auto increment primary key
@@ -92,7 +109,6 @@ public class BaseModel<T> implements Model<T> {
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void update(T bean) {

@@ -17,12 +17,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
-    static final String PASSWORD = "123456";
+    static final String PASSWORD = "";
 
     @Test
     public void testBuilder() throws Exception {
@@ -194,7 +195,7 @@ public class DatabaseTest {
         DatabaseManager.initManager(conn, new MysqlGrammar());
 
         UserBean bean = new UserBean();
-        bean.setId(21L);
+        bean.setId(31L);
         bean.setUsername("user_model");
         bean.setPassword("password11");
         bean.setEmail("model@lyhux.com");
@@ -210,6 +211,41 @@ public class DatabaseTest {
 
         System.out.printf("bean after insert: %s\n", bean);
     }
+
+    @Test
+    public void testUserModelInsertBatch() throws SQLException {
+        initDb();
+
+        UserBean bean1 = new UserBean();
+        // bean1.setId(24L);
+        bean1.setUsername("batch_insert_1");
+        bean1.setPassword("password11");
+        bean1.setEmail("model@lyhux.com");
+        bean1.setGender(1);
+        bean1.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        bean1.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+
+        UserBean bean2 = new UserBean();
+        // bean2.setId(21L);
+        bean2.setUsername("batch_insert_2");
+        bean2.setPassword("password11");
+        bean2.setEmail("model2@lyhux.com");
+        bean2.setGender(2);
+        bean2.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        bean2.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+
+
+        var userModel = new UserModel();
+
+        System.out.printf("bean before insert %s\n", bean1);
+        System.out.printf("bean before insert %s\n", bean2);
+
+        userModel.insertBatch(List.of(bean1, bean2));
+
+        System.out.printf("bean after insert: %s\n", bean1);
+        System.out.printf("bean after insert: %s\n", bean2);
+    }
+
 
     @Test
     public void testUserModelFindById() throws Exception {

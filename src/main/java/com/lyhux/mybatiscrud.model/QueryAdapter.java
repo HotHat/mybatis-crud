@@ -3,6 +3,8 @@ package com.lyhux.mybatiscrud.model;
 import com.lyhux.mybatiscrud.bean.BeanMapUtil;
 import com.lyhux.mybatiscrud.builder.grammar.*;
 import com.lyhux.mybatiscrud.builder.vendor.Grammar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,12 +13,13 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class QueryAdapter {
+    Logger logger = LoggerFactory.getLogger(QueryAdapter.class);
+
 
     protected Query builder;
     protected Connection conn;
     protected Grammar grammar;
 
-    static boolean isLogQuery = false;
     static List<ExprResult> queryLogs;
     Class<?> beanQualifier;
 
@@ -198,11 +201,11 @@ public class QueryAdapter {
     private List<Map<String, Object>> getQueryResult(ExprResult compileResult) throws SQLException {
         var result = new ArrayList<Map<String, Object>>();
 
-        if (isLogQuery) {
-            queryLogs.add(compileResult);
-        }
+        // add log
+        logQuery(compileResult.statement(), compileResult.bindings());
 
         PreparedStatement prepare =  conn.prepareStatement(compileResult.statement());
+
         int count = 1;
         for (var binding : compileResult.bindings()) {
             prepare.setObject(count++, binding.value());
@@ -235,6 +238,9 @@ public class QueryAdapter {
     }
 
     public Long execute(ExprResult result, boolean genKey) throws SQLException {
+        // add log
+        logQuery(result.statement(), result.bindings());
+
         var prepare = conn.prepareStatement(
             result.statement(),
             genKey ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS
@@ -259,11 +265,13 @@ public class QueryAdapter {
     }
 
     public Long execute(String statement, List<TypeValue<?>> bindings) throws SQLException {
+        logQuery(statement, bindings);
+
         var prepare = conn.prepareStatement(statement);
 
         int count = 1;
 
-        if (bindings != null) {
+        if (!bindings.isEmpty()) {
             for (var binding : bindings) {
                 prepare.setObject(count++, binding);
             }
@@ -283,6 +291,12 @@ public class QueryAdapter {
 
         return total;
     }
+
+    private void logQuery(String statement, List<TypeValue<?>> bindings) {
+        logger.info("sql: {}", statement);
+        logger.info("bindings: {}", bindings.toString());
+    }
+
 
 
 }

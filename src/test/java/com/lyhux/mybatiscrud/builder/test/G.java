@@ -11,6 +11,7 @@ public class G {
     public static void assertEquals(Grammar grammar, Stmt stmt, String statement, List<TypeValue<?>> bindings)
     {
         var result = grammar.compile(stmt);
+        System.out.println(result.toSql());
         System.out.println(result.statement());
         System.out.println(result.bindings());
 
@@ -31,6 +32,7 @@ public class G {
     public static void assertEquals(Grammar grammar, Expr expr, String statement, List<TypeValue<?>> bindings)
     {
         var result = grammar.compile(expr);
+        System.out.println(result.toSql());
         System.out.println(result.statement());
         System.out.println(result.bindings());
 

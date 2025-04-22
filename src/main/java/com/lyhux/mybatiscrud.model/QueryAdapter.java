@@ -293,8 +293,9 @@ public class QueryAdapter {
     }
 
     private void logQuery(String statement, List<TypeValue<?>> bindings) {
-        logger.info("sql: {}", statement);
-        logger.info("bindings: {}", bindings.toString());
+        logger.info("statement: {}", statement);
+        logger.info(" bindings: {}", bindings.toString());
+        logger.info("      sql: {}", new ExprResult(statement, bindings).toSql());
     }
 
 

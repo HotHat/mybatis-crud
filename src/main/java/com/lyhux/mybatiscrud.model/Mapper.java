@@ -1,4 +1,4 @@
 package com.lyhux.mybatiscrud.model;
 
-public interface Model<T> {
+public interface Mapper<T> {
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class ModelTest {
     @Test
     public void modelTest() throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        var model = new UserModel();
+        var model = new UserMapper();
         // MyBean bean = BeanFactory.getProxyBean(MyBean.class);
         UserBean bean = new UserBean();
         // bean.setId(1);

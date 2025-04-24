@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.*;
 
-public class BaseModel<T> implements Model<T> {
+public class BaseMapper<T> implements Mapper<T> {
     public void insert(T bean) {
         insertBean(List.of(bean), false);
     }
@@ -297,8 +297,24 @@ public class BaseModel<T> implements Model<T> {
         return new Page<>(pageRecord.page(), pageRecord.pageSize(), pageRecord.total(), result);
     }
 
+    public Long count(Query builder) throws Exception {
+        var beanType = getBeanType();
+        var info = BeanFactory.getMetaInfo(beanType);
+
+        var manager = DatabaseManager.getInstance();
+        var selectQuery = manager.adapter();
+
+        if (builder == null) {
+            builder = new Query();
+        }
+
+        builder.table(info.getTableName());
+        return selectQuery
+            .query(builder)
+            .count();
+    }
 
     private Class<?> getBeanType() {
-        return GenericTypeResolver.resolveTypeArguments(getClass(), Model.class)[0];
+        return GenericTypeResolver.resolveTypeArguments(getClass(), Mapper.class)[0];
     }
 }

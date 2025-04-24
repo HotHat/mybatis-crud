@@ -203,7 +203,7 @@ public class DatabaseTest {
         bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         System.out.printf("bean before insert %s\n", bean);
         userModel.insert(bean);
@@ -235,7 +235,7 @@ public class DatabaseTest {
         bean2.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
 
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         System.out.printf("bean before insert %s\n", bean1);
         System.out.printf("bean before insert %s\n", bean2);
@@ -251,7 +251,7 @@ public class DatabaseTest {
     public void testUserModelFindById() throws Exception {
         Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
         DatabaseManager.initManager(conn, new MysqlGrammar());
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         var opt = userModel.findById(9);
         System.out.printf("bean after findById: %s\n", opt);
@@ -273,7 +273,7 @@ public class DatabaseTest {
     @Test
     public void testUserModelFindAll() throws Exception {
         initDb();
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         var all = userModel.findAll();
         for (var user : all) {
@@ -289,7 +289,7 @@ public class DatabaseTest {
     @Test
     public void testUserModelQuery() throws Exception {
         initDb();
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         var all = userModel.query(
             new Query()
@@ -311,7 +311,7 @@ public class DatabaseTest {
     @Test
     public void testUserModelPaginate() throws Exception {
         initDb();
-        var userModel = new UserModel();
+        var userModel = new UserMapper();
 
         var page = userModel.paginate(
             new Query().paginate(1, 5)

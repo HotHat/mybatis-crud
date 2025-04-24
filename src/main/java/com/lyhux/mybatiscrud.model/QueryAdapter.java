@@ -20,15 +20,12 @@ public class QueryAdapter {
     protected Connection conn;
     protected Grammar grammar;
 
-    static List<ExprResult> queryLogs;
     Class<?> beanQualifier;
 
     public QueryAdapter(Connection conn, Grammar grammar) {
         this.conn = conn;
         this.grammar = grammar;
         builder = new Query();
-
-        queryLogs = new ArrayList<>();
     }
 
     public QueryAdapter query(QueryNest queryNest) {

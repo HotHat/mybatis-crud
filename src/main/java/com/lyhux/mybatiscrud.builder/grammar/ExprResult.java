@@ -21,12 +21,12 @@ public record ExprResult (String statement, List<TypeValue<?>> bindings){
                     var dateTime = binding.value();
                     var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     if (dateTime instanceof Timestamp) {
-                        yield "\"" + ((Timestamp) dateTime).toLocalDateTime().format(formatter) + "\"";
+                        yield "'" + ((Timestamp) dateTime).toLocalDateTime().format(formatter) + "'";
                     } else {
-                        yield "\"" + ((LocalDateTime) dateTime).format(formatter) + "\"";
+                        yield "'" + ((LocalDateTime) dateTime).format(formatter) + "'";
                     }
                 }
-                default -> "\"" + binding.value() + "\"";
+                default -> "'" + binding.value() + "'";
             };
 
             sb.replace(index, index + 1, replace);

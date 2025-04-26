@@ -313,16 +313,16 @@ public class DatabaseTest {
         initDb();
         var userModel = new UserMapper();
 
-        var page = userModel.paginate(
-            new Query().paginate(1, 5)
-                .where(wrapper -> {
-                    wrapper.where("id", ">", 10);
-                })
-        );
-        System.out.printf("page: %d, pageSize: %d, total: %d\n", page.page(), page.pageSize(), page.total());
-        for (var user : page.records()) {
-            System.out.printf("user: %s\n", user);
-        }
+        // var page = userModel.paginate(
+        //     new Query().paginate(1, 5)
+        //         .where(wrapper -> {
+        //             wrapper.where("id", ">", 10);
+        //         })
+        // );
+        // System.out.printf("page: %d, pageSize: %d, total: %d\n", page.page(), page.pageSize(), page.total());
+        // for (var user : page.records()) {
+        //     System.out.printf("user: %s\n", user);
+        // }
 
         // UserBean bean = new UserBean();
         // bean.setId(21L);

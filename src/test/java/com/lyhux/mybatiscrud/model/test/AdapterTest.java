@@ -289,10 +289,10 @@ public class AdapterTest {
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
 
         Query builder = new Query();
-        builder.table("users").paginate(1, 10);
+        builder.table("users");
 
         adapter.query(builder);
-        Page<Map<String, Object>> page = adapter.paginate();
+        Page<Map<String, Object>> page = adapter.paginate(1, 10);
         System.out.printf("page=%d, pageSize=%d, total=%d\n", page.page(), page.pageSize(), page.total());
     }
 
@@ -301,10 +301,10 @@ public class AdapterTest {
         var adapter = new QueryAdapter(conn, new MysqlGrammar());
 
         Query builder = new Query();
-        builder.table("users").paginate(1, 5);
+        builder.table("users");
 
         adapter.query(builder);
-        Page<UserBean> page = adapter.paginate(UserBean.class);
+        Page<UserBean> page = adapter.paginate(1, 5, UserBean.class);
         System.out.printf("page=%d, pageSize=%d, total=%d\n", page.page(), page.pageSize(), page.total());
         for (var bean : page.records()) {
             System.out.printf("bean: %s\n", bean);

@@ -273,29 +273,29 @@ public class BaseMapper<T> implements Mapper<T> {
         return result;
     }
 
-    public Page<T> paginate(Query builder) throws Exception {
-        var beanType = getBeanType();
-
-        var info = BeanFactory.getMetaInfo(beanType);
-
-        var manager = DatabaseManager.getInstance();
-        var selectQuery = manager.adapter();
-
-        builder.table(info.getTableName());
-
-        var pageRecord =  selectQuery
-            .query(builder)
-            .paginate();
-
-        List<T> result = new ArrayList<>();
-
-        for (var map : pageRecord.records()) {
-            var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
-            result.add(proxy);
-        }
-
-        return new Page<>(pageRecord.page(), pageRecord.pageSize(), pageRecord.total(), result);
-    }
+    // public Page<T> paginate(Query builder) throws Exception {
+    //     var beanType = getBeanType();
+    //
+    //     var info = BeanFactory.getMetaInfo(beanType);
+    //
+    //     var manager = DatabaseManager.getInstance();
+    //     var selectQuery = manager.adapter();
+    //
+    //     builder.table(info.getTableName());
+    //
+    //     var pageRecord =  selectQuery
+    //         .query(builder)
+    //         .paginate();
+    //
+    //     List<T> result = new ArrayList<>();
+    //
+    //     for (var map : pageRecord.records()) {
+    //         var proxy = (T)BeanFactory.mapToProxyBean(map, beanType);
+    //         result.add(proxy);
+    //     }
+    //
+    //     return new Page<>(pageRecord.page(), pageRecord.pageSize(), pageRecord.total(), result);
+    // }
 
     public Long count(Query builder) throws Exception {
         var beanType = getBeanType();

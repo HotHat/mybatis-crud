@@ -5,9 +5,14 @@ import com.lyhux.mybatiscrud.builder.grammar.select.ForExpr;
 import com.lyhux.mybatiscrud.builder.grammar.select.GroupByExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignListExpr;
 import com.lyhux.mybatiscrud.builder.grammar.update.AssignNest;
+import com.lyhux.mybatiscrud.model.DatabaseManager;
+import com.lyhux.mybatiscrud.model.Page;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Query {
@@ -44,6 +49,8 @@ public class Query {
         duplicateAssigns = new DuplicateAssignListExpr();
 
     }
+
+    public static Query of() { return new Query(); }
 
     public ColumnExpr getSelectExpr() { return selectExpr; }
     public TableRefsExpr getTableRefsExpr() { return tableRefsExpr; }
@@ -271,10 +278,10 @@ public class Query {
         );
     }
 
-    public Query paginate(int page, int pageSize) {
-        paginate = new Paginate(page, pageSize);
-        return this;
-    }
+    // public Query paginate(int page, int pageSize) {
+    //     paginate = new Paginate(page, pageSize);
+    //     return this;
+    // }
 
     public InsertStmt toInsertStmt() {
         var refs = tableRefsExpr.getTableRefs();
@@ -311,4 +318,45 @@ public class Query {
             limitExpr
         );
     }
+
+    public List<Map<String, Object>> get() throws Exception {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.get();
+    }
+
+    public<T> List<T> get(Class<T> bean) throws Exception {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.get(bean);
+    }
+
+    public Optional<Map<String, Object>> first() throws Exception
+    {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.first();
+    }
+
+    public<T> Optional<T> first(Class<T> bean) throws Exception
+    {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.first(bean);
+    }
+
+    public <T> Page<T> paginate(int page, int pageSize, Class<T> bean) throws Exception {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.paginate(page, pageSize, bean);
+    }
+
+
+    public Page<Map<String, Object>> paginate(int page, int pageSize) throws SQLException {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.paginate(page, pageSize);
+
+    }
+
 }

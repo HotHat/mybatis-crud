@@ -81,8 +81,8 @@ public class QueryAdapter {
         return result;
     }
 
-    public <T> Page<T> paginate(Class<T> bean) throws Exception {
-        var pageMap = paginate();
+    public <T> Page<T> paginate(int page, int pageSize, Class<T> bean) throws Exception {
+        var pageMap = paginate(page, pageSize);
 
         var result = new ArrayList<T>(pageMap.records().size());
         for (Map<String, Object> map: pageMap.records()) {
@@ -93,14 +93,14 @@ public class QueryAdapter {
         return new Page<>(pageMap.page(), pageMap.pageSize(), pageMap.total(), result);
     }
 
-    public Page<Map<String, Object>> paginate() throws SQLException {
-        if (builder.getPaginate() == null) {
-            return new Page<>(0, 0, 0, new ArrayList<>());
-        }
+    public Page<Map<String, Object>> paginate(int page, int pageSize) throws SQLException {
+        // if (builder.getPaginate() == null{
+        //     return new Page<>(0, 0, 0, new ArrayList<>());
+        // }
 
-        var paginate = builder.getPaginate();
-        int page = paginate.page();
-        int pageSize = paginate.pageSize();
+        // var paginate = builder.getPaginate();
+        // int page = paginate.page();
+        // int pageSize = paginate.pageSize();
 
         Long total = 0L;
         if (!builder.getGroupByExpr().isEmpty() || !builder.getUnionClause().isEmpty()) {

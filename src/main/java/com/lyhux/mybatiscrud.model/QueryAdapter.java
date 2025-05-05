@@ -289,6 +289,10 @@ public class QueryAdapter {
         return total;
     }
 
+    public ExprResult dump() {
+        return grammar.compile(builder.toSelectStmt());
+    }
+
     private void logQuery(String statement, List<TypeValue<?>> bindings) {
         logger.info("statement: {}", statement);
         logger.info(" bindings: {}", bindings.toString());

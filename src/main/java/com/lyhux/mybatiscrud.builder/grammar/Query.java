@@ -231,6 +231,15 @@ public class Query {
         return this;
     }
 
+
+    // conditional clauses
+    public Query when(boolean cond, QueryNest wrapper) {
+        if (cond) {
+            wrapper.query(this);
+        }
+        return this;
+    }
+
     // for update | share
     public Query forUpdate() {
         forExpr = new ForExpr("UPDATE");
@@ -318,6 +327,13 @@ public class Query {
             limitExpr
         );
     }
+
+    public ExprResult dump() {
+        var adapter = DatabaseManager.getInstance().adapter();
+        adapter.query(this);
+        return adapter.dump();
+    }
+
 
     public List<Map<String, Object>> get() throws Exception {
         var adapter = DatabaseManager.getInstance().adapter();

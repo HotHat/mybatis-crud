@@ -1,36 +1,39 @@
 package com.lyhux.mybatiscrud.model.test;
 
-import com.lyhux.mybatiscrud.builder.grammar.Query;
 import com.lyhux.mybatiscrud.builder.grammar.TypeValue;
+import com.lyhux.mybatiscrud.model.Builder;
+import com.lyhux.mybatiscrud.model.DatabaseManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public class QueryTest {
+public class BuilderTest {
     static final String DB_URL = "jdbc:mysql://localhost/xapp";
     static final String USER = "root";
     static final String PASSWORD = "123456";
+    private Builder builder;
 
     @BeforeEach
     public void initDB() throws SQLException {
         DbInit.initDb();
+        builder = DatabaseManager.getInstance().builder();
     }
 
     @Test
     public void TestSelect1() throws Exception {
-        var user = Query.of()
-            .table("users")
-            .where(wrapper -> wrapper.where("id", 1))
-            .get()
+        var user = builder
+                          .table("users")
+                          .where(wrapper -> wrapper.where("id", 1))
+                          .get()
             ;
         System.out.println(user);
     }
 
     @Test
     public void TestSelect2() throws Exception {
-        var user = Query.of()
+        var user = builder
             .table("users")
             .where(wrapper -> wrapper.where("id", 1))
             .get(UserBean.class)
@@ -40,7 +43,7 @@ public class QueryTest {
 
     @Test
     public void TestWhen() throws Exception {
-        var result = Query.of()
+        var result = builder
             .table("users")
             .when(true, wrapper -> wrapper.where(wp -> wp.where("id", 1)))
             .dump()
@@ -50,7 +53,7 @@ public class QueryTest {
                 TypeValue.of(1)
                 ));
 
-        var result2 = Query.of()
+        var result2 = builder
             .table("users")
             .when(false, wrapper -> wrapper.where(wp -> wp.where("id", 1)))
             .dump()
@@ -61,7 +64,7 @@ public class QueryTest {
 
     @Test
     public void TestPaginate() throws Exception {
-        var page = Query.of()
+        var page = builder
             .table("users")
             .where(wrapper -> wrapper.where("id", ">", 1))
             .paginate(1, 5, UserBean.class)

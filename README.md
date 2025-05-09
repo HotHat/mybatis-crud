@@ -23,7 +23,7 @@ public class UserBean {
     // ...getter and setter
 }
 
-public class UserModel extends BaseModel<UserBean> {
+public class UserMapper extends BaseMapper<UserBean> {
 }
 ```
 
@@ -39,29 +39,29 @@ bean.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 bean.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
 // .. attribute set
 
-var userModel = new UserModel();
+var userMapper = new UserMapper();
 
 // insert
-userModel.insert(bean);
+userMapper.insert(bean);
 
 // findById
-var opt = userModel.findById(9);
+var opt = userMapper.findById(9);
 if (opt.isPresent()) {
     var user = opt.get();
     // update data
     user.setUsername("update username");
     user.setEmail("update@gmail.com");
     // update
-    userModel.update(user);
+    userMapper.update(user);
 }
 
 // delate
 UserBean bean = new UserBean();
 bean.setId(21L);
-long count = userModel.delete(bean);
+long count = userMapper.delete(bean);
 
 // query
-var all = userModel.query(
+var all = userMapper.query(
     new Query()
         .select("users.*")
         // default with bean @TableName()
@@ -75,13 +75,16 @@ var all = userModel.query(
 ## Query builder
 
 ```java
-var query = new Query().table("users");
+import com.lyhux.mybatiscrud.model.DatabaseManager;
+
+var builder = DatabaseManager.getInstance().builder();
 ```
 
 ## Select Statements
 ```java
-var query = new Query()
+var user = builder
     .table("users")
     .select("name", "email as user_email")
     .selectRaw("count(*) as user_count, status")
+    .get();
 ```

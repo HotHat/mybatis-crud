@@ -24,6 +24,8 @@ public class Database {
         return new QueryAdapter(conn, grammar);
     }
 
+    public Builder builder(){ return new Builder(this.adapter()); }
+
     public void beginTransaction() throws SQLException {
         transactLevel++;
 

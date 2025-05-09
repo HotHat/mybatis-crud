@@ -130,14 +130,14 @@ public class Query {
         return join(table, query, "INNER");
     }
 
-    public Query joinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query joinSub(Query subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "INNER");
     }
 
-    public Query joinSub(SelectStmt subTable, String tableAlias, WhereNest query, String joinType) {
+    public Query joinSub(Query subTable, String tableAlias, WhereNest query, String joinType) {
         var whereExpr = new WhereExpr();
         whereExpr.on(query);
-        var joinedExpr = new TableJoinedExpr(joinType, new TableSubExpr(subTable,  tableAlias), whereExpr);
+        var joinedExpr = new TableJoinedExpr(joinType, new TableSubExpr(subTable.toSelectStmt(),  tableAlias), whereExpr);
         assert !tableRefsExpr.isEmpty();
         var refs = tableRefsExpr.getTableRefs();
 
@@ -151,7 +151,7 @@ public class Query {
         return join(table, leftColumn, operator, rightColumn, "LEFT");
     }
 
-    public Query leftJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query leftJoinSub(Query subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "LEFT");
     }
 
@@ -159,7 +159,7 @@ public class Query {
         return join(table, leftColumn, operator, rightColumn, "RIGHT");
     }
 
-    public Query rightJoinSub(SelectStmt subTable, String alias, WhereNest query) {
+    public Query rightJoinSub(Query subTable, String alias, WhereNest query) {
         return joinSub(subTable, alias, query, "RIGHT");
     }
 
@@ -326,53 +326,6 @@ public class Query {
             orderByExpr,
             limitExpr
         );
-    }
-
-    public ExprResult dump() {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.dump();
-    }
-
-
-    public List<Map<String, Object>> get() throws Exception {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.get();
-    }
-
-    public<T> List<T> get(Class<T> bean) throws Exception {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.get(bean);
-    }
-
-    public Optional<Map<String, Object>> first() throws Exception
-    {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.first();
-    }
-
-    public<T> Optional<T> first(Class<T> bean) throws Exception
-    {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.first(bean);
-    }
-
-    public <T> Page<T> paginate(int page, int pageSize, Class<T> bean) throws Exception {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.paginate(page, pageSize, bean);
-    }
-
-
-    public Page<Map<String, Object>> paginate(int page, int pageSize) throws SQLException {
-        var adapter = DatabaseManager.getInstance().adapter();
-        adapter.query(this);
-        return adapter.paginate(page, pageSize);
-
     }
 
 }

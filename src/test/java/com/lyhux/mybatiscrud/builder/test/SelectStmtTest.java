@@ -110,10 +110,10 @@ public class SelectStmtTest {
         var selector = new Query();
 
         selector.from("users")
-                .joinSub(latestPosts.toSelectStmt(), "latest_posts", (join) -> {
+                .joinSub(latestPosts, "latest_posts", (join) -> {
                     join.on("users.id", "=", "latest_posts.user_id");
                 })
-                .joinSub(latestPosts.toSelectStmt(), "latest_posts", (join) -> {
+                .joinSub(latestPosts, "latest_posts", (join) -> {
                     join.on("users.id", "=", "latest_posts.user_id");
                 })
             .where((query) -> {

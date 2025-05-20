@@ -88,3 +88,59 @@ var user = builder
     .selectRaw("count(*) as user_count, status")
     .get();
 ```
+
+## joins
+```java
+var user = builder
+    .table("users")
+    .join("contacts", "users.id", "=", "contacts.user_id")
+    .join("orders", "users.id", "=", "orders.user_id")
+    .select("users.*", "contacts.phone", "orders.price")
+    .get();
+
+var users = builder
+    .table("users")
+    .leftJoin("posts", "users.id", "=", "posts.user_id")
+    .get();
+var users = builder
+    .table("users")
+    .rightJoin("posts", "users.id", "=", "posts.user_id")
+    .get();
+
+// Advanced Join Clauses
+var users = builder
+    .table("users")
+    .join("posts", (join) -> join.on("user.id", "=", "contacts.user_id")
+                                 .wnere("contacts.user_id", ">", 5))
+    .get();
+
+// Subquery Joins
+var latestPosts = builder
+    .table("posts")
+    .select("user_id")
+    .selectRaw("MAX(created_at) as last_post_created_at")
+    .where("is_published", 1)
+    .groupBy("user_id");
+
+var users = builder
+    .table("users")
+    .joinSub(latestPosts, "latest_posts", (join) -> {
+        join.on("user.id", "=", "latest_posts.user_id");
+    })
+    .get();
+
+```
+
+## Unions
+```java
+var first = builder
+    .table("users")
+    .whereNull("first_name");
+
+var users = builder
+    .table("users")
+    .whereNull("last_name")
+    .union(first)
+    .get();
+
+```
